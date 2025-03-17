@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db"); // Kết nối database
+const db = require("../db"); // Kết nối database
 
 // Hàm tự động ánh xạ dữ liệu thành object theo khóa ngoại
 const mapObjectData = (data, mainKey, subKeys) => {
