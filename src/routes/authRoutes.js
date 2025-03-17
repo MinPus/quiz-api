@@ -86,7 +86,7 @@ router.get("/baithi", async (req, res) => {
 
 module.exports = router;
 
-});// Lấy danh sách giáo viên kèm môn học chính
+// Lấy danh sách giáo viên kèm môn học chính
 router.get("/giaovien", async (req, res) => {
     try {
         const giaovienQuery = `
