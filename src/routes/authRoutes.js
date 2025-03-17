@@ -284,4 +284,139 @@ router.get("/monhoc", async (req, res) => {
     }
 });
 
+// Lấy danh sách bài thi theo môn + id sinh viên
+router.get("/baithi/:id_monhoc/:id_hocsinh", async (req, res) => {
+    try {
+        const { id_monhoc, id_hocsinh } = req.params;
+        const query = `
+            SELECT * FROM baithi
+            JOIN dethi ON baithi.id_dethi = dethi.id_dethi
+            WHERE dethi.id_monhoc = ? AND baithi.id_hocsinh = ?
+        `;
+        const [rows] = await db.execute(query, [id_monhoc, id_hocsinh]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất 1 bài thi của sinh viên
+router.get("/baithi/:id_baithi", async (req, res) => {
+    try {
+        const { id_baithi } = req.params;
+        const query = "SELECT * FROM baithi WHERE id_baithi = ?";
+        const [rows] = await db.execute(query, [id_baithi]);
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất tất cả bài thi của 1 sinh viên
+router.get("/baithi/hocsinh/:id_hocsinh", async (req, res) => {
+    try {
+        const { id_hocsinh } = req.params;
+        const query = "SELECT * FROM baithi WHERE id_hocsinh = ?";
+        const [rows] = await db.execute(query, [id_hocsinh]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất tất cả đề thi của 1 giáo viên
+router.get("/dethi/giaovien/:id_giaovien", async (req, res) => {
+    try {
+        const { id_giaovien } = req.params;
+        const query = "SELECT * FROM dethi WHERE id_giaovien = ?";
+        const [rows] = await db.execute(query, [id_giaovien]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất thông tin của 1 giáo viên
+router.get("/giaovien/:id_giaovien", async (req, res) => {
+    try {
+        const { id_giaovien } = req.params;
+        const query = "SELECT * FROM giaovien WHERE id_giaovien = ?";
+        const [rows] = await db.execute(query, [id_giaovien]);
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất đề thi theo môn
+router.get("/dethi/monhoc/:id_monhoc", async (req, res) => {
+    try {
+        const { id_monhoc } = req.params;
+        const query = "SELECT * FROM dethi WHERE id_monhoc = ?";
+        const [rows] = await db.execute(query, [id_monhoc]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất thông tin 1 sinh viên
+router.get("/hocsinh/:id_hocsinh", async (req, res) => {
+    try {
+        const { id_hocsinh } = req.params;
+        const query = "SELECT * FROM hocsinh WHERE id_hocsinh = ?";
+        const [rows] = await db.execute(query, [id_hocsinh]);
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất tất cả bài thi theo ngày thi của 1 giáo viên
+router.get("/baithi/giaovien/:id_giaovien/ngaythi/:ngaythi", async (req, res) => {
+    try {
+        const { id_giaovien, ngaythi } = req.params;
+        const query = `
+            SELECT baithi.* 
+            FROM baithi
+            JOIN dethi ON baithi.id_dethi = dethi.id_dethi
+            WHERE dethi.id_giaovien = ? AND DATE(baithi.ngaylam) = ?
+        `;
+        const [rows] = await db.execute(query, [id_giaovien, ngaythi]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất tất cả bài thi theo đề thi
+router.get("/baithi/dethi/:id_dethi", async (req, res) => {
+    try {
+        const { id_dethi } = req.params;
+        const query = "SELECT * FROM baithi WHERE id_dethi = ?";
+        const [rows] = await db.execute(query, [id_dethi]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Truy xuất tất cả bài thi theo môn của 1 giáo viên
+router.get("/baithi/monhoc/:id_monhoc/giaovien/:id_giaovien", async (req, res) => {
+    try {
+        const { id_monhoc, id_giaovien } = req.params;
+        const query = `
+            SELECT baithi.* 
+            FROM baithi
+            JOIN dethi ON baithi.id_dethi = dethi.id_dethi
+            WHERE dethi.id_monhoc = ? AND dethi.id_giaovien = ?
+        `;
+        const [rows] = await db.execute(query, [id_monhoc, id_giaovien]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 module.exports = router;
