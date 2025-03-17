@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db"); // Kết nối database
+const db = require("../db"); // Kết nối database
 
 // Lấy danh sách bài thi kèm thông tin học sinh
 router.get("/baithi", async (req, res) => {
