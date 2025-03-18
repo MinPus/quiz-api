@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db"); // Kết nối database
+const bodyParser = require('body-parser');
 const tables = ['hocsinh', 'giaovien', 'dethi', 'baithi', 'cauhoi', 'cautraloi', 'admin', 'monhoc'];
 const app = express();
 app.use(bodyParser.json());
