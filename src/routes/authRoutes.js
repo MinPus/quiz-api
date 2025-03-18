@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db"); // Kết nối database
 const tables = ['hocsinh', 'giaovien', 'dethi', 'baithi', 'cauhoi', 'cautraloi', 'admin', 'monhoc'];
-
+const app = express();
+app.use(bodyParser.json());
 // Tạo API POST, PUT, DELETE cho mỗi bảng
 tables.forEach(table => {
     // POST: Thêm dữ liệu mới
