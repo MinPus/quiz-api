@@ -84,10 +84,52 @@ router.get("/baithi", async (req, res) => {
     }
 });
 
-module.exports = router;
+//up
+router.get("/baithi", async (req, res) => {
+    try {
+        const baithiQuery = `
+            SELECT 
+                baithi.id_baithi, baithi.id_dethi, baithi.id_hocsinh, baithi.ngaylam, baithi.trangthai, baithi.diemthi,
+                hocsinh.id_hocsinh, hocsinh.ten_hocsinh, hocsinh.tendangnhap, hocsinh.email, hocsinh.phone,
+                dethi.id_giaovien, dethi.id_monhoc, dethi.ngay_tao, dethi.thoigianthi, dethi.thoigianbatdau, dethi.thoigianketthuc, dethi.trangthai AS trangthai_dethi
+            FROM baithi
+            JOIN hocsinh ON baithi.id_hocsinh = hocsinh.id_hocsinh
+            JOIN dethi ON baithi.id_dethi = dethi.id_dethi
+        `;
+        const [rows] = await db.execute(baithiQuery);
+
+        const result = rows.map(row => ({
+            id_baithi: row.id_baithi,
+            hocsinh: {
+                id_hocsinh: row.id_hocsinh,
+                ten_hocsinh: row.ten_hocsinh,
+                tendangnhap: row.tendangnhap,
+                email: row.email,
+                phone: row.phone
+            },
+            dethi: {
+                id_dethi: row.id_dethi,
+                id_giaovien: row.id_giaovien,
+                id_monhoc:row.id_monhoc,
+                ngay_tao:row.ngay_tao,
+                thoigianbatdau:row.thoigianbatdau,
+                thoigianketthuc:row.thoigianketthuc,
+                thoigianthi:row.thoigianthi,
+                trangthai:row.trangthai,
+            },
+            ngaylam: row.ngaylam,
+            trangthai: row.trangthai,
+            diemthi: row.diemthi
+        }));
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Lấy danh sách câu hỏi kèm thông tin môn học
-router.get("/cauhoi", async (req, res) => {
+router.get("/cauhoi/:id", async (req, res) => {
     try {
         const cauhoiQuery = `
             SELECT 
@@ -223,6 +265,43 @@ router.get("/dethi", async (req, res) => {
     }
 });
 
+//up
+router.get("/dethi/:id", async (req, res) => {
+    try {
+        const dethiQuery = `
+            SELECT 
+                dethi.id_dethi, dethi.id_giaovien, dethi.id_monhoc, dethi.ngay_tao, dethi.thoigianthi, dethi.thoigianbatdau, dethi.thoigianketthuc, dethi.trangthai,
+                giaovien.ten_giaovien,
+                monhoc.tenmonhoc
+            FROM dethi
+            JOIN giaovien ON dethi.id_giaovien = giaovien.id_giaovien
+            JOIN monhoc ON dethi.id_monhoc = monhoc.id_monhoc
+        `;
+        const [rows] = await db.execute(dethiQuery);
+        
+        const result = rows.map(row => ({
+            id_dethi: row.id_dethi,
+            ngay_tao: row.ngay_tao,
+            thoigianthi: row.thoigianthi,
+            thoigianbatdau: row.thoigianbatdau,
+            thoigianketthuc: row.thoigianketthuc,
+            trangthai: row.trangthai,
+            giaovien: {
+                id_giaovin: row.id_giaovien,
+                ten_giaovien: row.ten_giaovien
+            },
+            monhoc: {
+                id_monhoc: row.id_monhoc,
+                tenmonhoc: row.tenmonhoc
+            }
+        }));
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Lấy danh sách học sinh
 router.get("/hocsinh", async (req, res) => {
     try {
@@ -249,6 +328,40 @@ router.get("/hocsinh", async (req, res) => {
 
 // Lấy danh sách câu trả lời kèm thông tin câu hỏi
 router.get("/cautraloi", async (req, res) => {
+    try {
+        const cautraloiQuery = `
+            SELECT 
+                cautraloi.id_cautraloi, cautraloi.id_cauhoi, cautraloi.noidungcautraloi,
+                cauhoi.noidungcauhoi, cauhoi.dapan, cauhoi.id_monhoc,
+                monhoc.tenmonhoc
+            FROM cautraloi
+            JOIN cauhoi ON cautraloi.id_cauhoi = cauhoi.id_cauhoi
+            JOIN monhoc ON cauhoi.id_monhoc = monhoc.id_monhoc
+        `;
+        const [rows] = await db.execute(cautraloiQuery);
+        
+        const result = rows.map(row => ({
+            id_cautraloi: row.id_cautraloi,
+            noidungcautraloi: row.noidungcautraloi,
+            cauhoi: {
+                id_cauhoi: row.id_cauhoi,
+                noidungcauhoi: row.noidungcauhoi,
+                dapan: row.dapan,
+                monhoc: {
+                    id_monhoc: row.id_monhoc,
+                    tenmonhoc: row.tenmonhoc
+                }
+            }
+        }));
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+//up
+router.get("/cautraloi/:id", async (req, res) => {
     try {
         const cautraloiQuery = `
             SELECT 
