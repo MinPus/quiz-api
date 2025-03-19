@@ -1,48 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db"); // Kết nối database
-const bodyParser = require('body-parser');
-const tables = ['hocsinh', 'giaovien', 'dethi', 'baithi', 'cauhoi', 'cautraloi', 'admin', 'monhoc'];
-const app = express();
-app.use(bodyParser.json());
-// Tạo API POST, PUT, DELETE cho mỗi bảng
-tables.forEach(table => {
-    // POST: Thêm dữ liệu mới
-    app.post(`/${table}`, async (req, res) => {
-        try {
-            const keys = Object.keys(req.body).join(', ');
-            const values = Object.values(req.body).map(value => `'${value}'`).join(', ');
-            const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`;
-            await sql.query(query);
-            res.status(201).send({ message: `Inserted into ${table}` });
-        } catch (error) {
-            res.status(500).send(error);
-        }
-    });
 
-    // PUT: Cập nhật dữ liệu theo ID
-    app.put(`/${table}/:id`, async (req, res) => {
-        try {
-            const updates = Object.keys(req.body).map(key => `${key}='${req.body[key]}'`).join(', ');
-            const query = `UPDATE ${table} SET ${updates} WHERE id=${req.params.id}`;
-            await sql.query(query);
-            res.send({ message: `Updated ${table} with ID ${req.params.id}` });
-        } catch (error) {
-            res.status(500).send(error);
-        }
-    });
-
-    // DELETE: Xóa dữ liệu theo ID
-    app.delete(`/${table}/:id`, async (req, res) => {
-        try {
-            const query = `DELETE FROM ${table} WHERE id=${req.params.id}`;
-            await sql.query(query);
-            res.send({ message: `Deleted from ${table} with ID ${req.params.id}` });
-        } catch (error) {
-            res.status(500).send(error);
-        }
-    });
-});
 // Hàm tự động ánh xạ dữ liệu thành object theo khóa ngoại
 const mapObjectData = (data, mainKey, subKeys) => {
     return data.map(item => {
@@ -459,5 +418,47 @@ router.get("/baithi/monhoc/:id_monhoc/giaovien/:id_giaovien", async (req, res) =
     }
 });
 
+// Thêm bản ghi vào bảng chỉ định
+router.post('/:table', async (req, res) => {
+    try {
+        const { table } = req.params;
+        const data = req.body;
+        const keys = Object.keys(data).join(',');
+        const values = Object.values(data).map(value => `'${value}'`).join(',');
+        const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`;
 
+        await db.query(query);
+        res.status(201).json({ message: `Record added to ${table} successfully` });
+    } catch (error) {
+        res.status(500).json({ error: `Error adding record to ${table}: ${error.message}` });
+    }
+});
+
+// Cập nhật bản ghi trong bảng chỉ định
+router.put('/:table/:id', async (req, res) => {
+    try {
+        const { table, id } = req.params;
+        const data = req.body;
+        const updates = Object.entries(data).map(([key, value]) => `${key}='${value}'`).join(',');
+        const query = `UPDATE ${table} SET ${updates} WHERE id=${id}`;
+
+        await db.query(query);
+        res.status(200).json({ message: `Record in ${table} updated successfully` });
+    } catch (error) {
+        res.status(500).json({ error: `Error updating record in ${table}: ${error.message}` });
+    }
+});
+
+// Xóa bản ghi trong bảng chỉ định
+router.delete('/:table/:id', async (req, res) => {
+    try {
+        const { table, id } = req.params;
+        const query = `DELETE FROM ${table} WHERE id=${id}`;
+
+        await db.query(query);
+        res.status(200).json({ message: `Record in ${table} deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ error: `Error deleting record in ${table}: ${error.message}` });
+    }
+});
 module.exports = router;
