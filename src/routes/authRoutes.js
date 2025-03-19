@@ -442,12 +442,22 @@ router.put('/:table/:id', async (req, res) => {
         const table = req.params.table;
         const id = req.params.id;
         const data = req.body;
+
         if (!table || !id || Object.keys(data).length === 0) {
             return res.status(400).json({ error: "Invalid table name, ID, or data" });
         }
 
+        // Lấy tên cột khóa chính của bảng
+        const [primaryKey] = await db.query(`SHOW KEYS FROM \`${table}\` WHERE Key_name = 'PRIMARY'`);
+        if (!primaryKey || primaryKey.length === 0) {
+            return res.status(400).json({ error: `Table ${table} has no primary key` });
+        }
+
+        const primaryKeyColumn = primaryKey[0].Column_name; // Lấy tên cột khóa chính
+
+        // Tạo câu lệnh cập nhật
         const updates = Object.entries(data).map(([key, value]) => `\`${key}\`='${value}'`).join(',');
-        const query = `UPDATE \`${table}\` SET ${updates} WHERE id=${id}`;
+        const query = `UPDATE \`${table}\` SET ${updates} WHERE \`${primaryKeyColumn}\`='${id}'`;
 
         await db.query(query);
         res.status(200).json({ message: `Record in ${table} updated successfully` });
@@ -455,6 +465,7 @@ router.put('/:table/:id', async (req, res) => {
         res.status(500).json({ error: `Error updating record in ${req.params.table}: ${error.message}` });
     }
 });
+
 
 
 router.delete('/:table/:id', async (req, res) => {
