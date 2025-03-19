@@ -418,47 +418,60 @@ router.get("/baithi/monhoc/:id_monhoc/giaovien/:id_giaovien", async (req, res) =
     }
 });
 
-// Thêm bản ghi vào bảng chỉ định
 router.post('/:table', async (req, res) => {
     try {
-        const { table } = req.params;
+        const table = req.params.table; // Đảm bảo lấy đúng giá trị từ URL
         const data = req.body;
-        const keys = Object.keys(data).join(',');
+        if (!table || Object.keys(data).length === 0) {
+            return res.status(400).json({ error: "Invalid table name or data" });
+        }
+        
+        const keys = Object.keys(data).map(key => `\`${key}\``).join(',');
         const values = Object.values(data).map(value => `'${value}'`).join(',');
-        const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`;
+        const query = `INSERT INTO \`${table}\` (${keys}) VALUES (${values})`;
 
         await db.query(query);
         res.status(201).json({ message: `Record added to ${table} successfully` });
     } catch (error) {
-        res.status(500).json({ error: `Error adding record to ${table}: ${error.message}` });
+        res.status(500).json({ error: `Error adding record to ${req.params.table}: ${error.message}` });
     }
 });
 
-// Cập nhật bản ghi trong bảng chỉ định
 router.put('/:table/:id', async (req, res) => {
     try {
-        const { table, id } = req.params;
+        const table = req.params.table;
+        const id = req.params.id;
         const data = req.body;
-        const updates = Object.entries(data).map(([key, value]) => `${key}='${value}'`).join(',');
-        const query = `UPDATE ${table} SET ${updates} WHERE id=${id}`;
+        if (!table || !id || Object.keys(data).length === 0) {
+            return res.status(400).json({ error: "Invalid table name, ID, or data" });
+        }
+
+        const updates = Object.entries(data).map(([key, value]) => `\`${key}\`='${value}'`).join(',');
+        const query = `UPDATE \`${table}\` SET ${updates} WHERE id=${id}`;
 
         await db.query(query);
         res.status(200).json({ message: `Record in ${table} updated successfully` });
     } catch (error) {
-        res.status(500).json({ error: `Error updating record in ${table}: ${error.message}` });
+        res.status(500).json({ error: `Error updating record in ${req.params.table}: ${error.message}` });
     }
 });
 
-// Xóa bản ghi trong bảng chỉ định
+
 router.delete('/:table/:id', async (req, res) => {
     try {
-        const { table, id } = req.params;
-        const query = `DELETE FROM ${table} WHERE id=${id}`;
+        const table = req.params.table;
+        const id = req.params.id;
+        if (!table || !id) {
+            return res.status(400).json({ error: "Invalid table name or ID" });
+        }
+
+        const query = `DELETE FROM \`${table}\` WHERE id=${id}`;
 
         await db.query(query);
         res.status(200).json({ message: `Record in ${table} deleted successfully` });
     } catch (error) {
-        res.status(500).json({ error: `Error deleting record in ${table}: ${error.message}` });
+        res.status(500).json({ error: `Error deleting record in ${req.params.table}: ${error.message}` });
     }
 });
+
 module.exports = router;
