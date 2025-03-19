@@ -146,6 +146,46 @@ router.get("/giaovien", async (req, res) => {
     }
 });
 
+//up
+router.get("/giaovien/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const giaovienQuery = `
+            SELECT 
+                giaovien.id_giaovien, giaovien.ten_giaovien, giaovien.tendangnhap_gv, giaovien.email_gv, giaovien.phone_gv,
+                giaovien.monchinh, giaovien.lopdaychinh,
+                monhoc.tenmonhoc
+            FROM giaovien
+            LEFT JOIN monhoc ON giaovien.monchinh = monhoc.id_monhoc
+            WHERE giaovien.id_giaovien = ?
+        `;
+        const [rows] = await db.execute(giaovienQuery, [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Giáo viên không tồn tại" });
+        }
+
+        const row = rows[0];
+        const result = {
+            id_giaovien: row.id_giaovien,
+            ten_giaovien: row.ten_giaovien,
+            tendangnhap_gv: row.tendangnhap_gv,
+            email_gv: row.email_gv,
+            phone_gv: row.phone_gv,
+            lopdaychinh: row.lopdaychinh,
+            monhoc: {
+                id_monhoc: row.monchinh,
+                tenmonhoc: row.tenmonhoc
+            }
+        };
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Lấy danh sách đề thi kèm thông tin giáo viên và môn học
 router.get("/dethi", async (req, res) => {
     try {
