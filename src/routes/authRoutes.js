@@ -461,11 +461,15 @@ router.delete('/:table/:id', async (req, res) => {
     try {
         const table = req.params.table;
         const id = req.params.id;
-        if (!table || !id) {
-            return res.status(400).json({ error: "Invalid table name or ID" });
+
+        // Lấy thông tin cột khóa chính
+        const [primaryKey] = await db.query(`SHOW KEYS FROM \`${table}\` WHERE Key_name = 'PRIMARY'`);
+        if (!primaryKey || primaryKey.length === 0) {
+            return res.status(400).json({ error: `Table ${table} has no primary key` });
         }
 
-        const query = `DELETE FROM \`${table}\` WHERE id=${id}`;
+        const primaryKeyColumn = primaryKey[0].Column_name;
+        const query = `DELETE FROM \`${table}\` WHERE \`${primaryKeyColumn}\`='${id}'`;
 
         await db.query(query);
         res.status(200).json({ message: `Record in ${table} deleted successfully` });
@@ -473,5 +477,6 @@ router.delete('/:table/:id', async (req, res) => {
         res.status(500).json({ error: `Error deleting record in ${req.params.table}: ${error.message}` });
     }
 });
+
 
 module.exports = router;
