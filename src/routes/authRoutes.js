@@ -84,9 +84,11 @@ router.get("/baithi", async (req, res) => {
     }
 });
 
-//up
-router.get("/baithi", async (req, res) => {
+//get theo id
+router.get("/baithi/:id", async (req, res) => {
     try {
+        const { id } = req.params;
+
         const baithiQuery = `
             SELECT 
                 baithi.id_baithi, baithi.id_dethi, baithi.id_hocsinh, baithi.ngaylam, baithi.trangthai, baithi.diemthi,
@@ -95,10 +97,16 @@ router.get("/baithi", async (req, res) => {
             FROM baithi
             JOIN hocsinh ON baithi.id_hocsinh = hocsinh.id_hocsinh
             JOIN dethi ON baithi.id_dethi = dethi.id_dethi
+            WHERE baithi.id_baithi = ?
         `;
-        const [rows] = await db.execute(baithiQuery);
+        const [rows] = await db.execute(baithiQuery, [id]);
 
-        const result = rows.map(row => ({
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Bài thi không tồn tại" });
+        }
+
+        const row = rows[0];
+        const result = {
             id_baithi: row.id_baithi,
             hocsinh: {
                 id_hocsinh: row.id_hocsinh,
@@ -110,17 +118,17 @@ router.get("/baithi", async (req, res) => {
             dethi: {
                 id_dethi: row.id_dethi,
                 id_giaovien: row.id_giaovien,
-                id_monhoc:row.id_monhoc,
-                ngay_tao:row.ngay_tao,
-                thoigianbatdau:row.thoigianbatdau,
-                thoigianketthuc:row.thoigianketthuc,
-                thoigianthi:row.thoigianthi,
-                trangthai:row.trangthai,
+                id_monhoc: row.id_monhoc,
+                ngay_tao: row.ngay_tao,
+                thoigianbatdau: row.thoigianbatdau,
+                thoigianketthuc: row.thoigianketthuc,
+                thoigianthi: row.thoigianthi,
+                trangthai: row.trangthai_dethi
             },
             ngaylam: row.ngaylam,
             trangthai: row.trangthai,
             diemthi: row.diemthi
-        }));
+        };
 
         res.json(result);
     } catch (error) {
@@ -128,8 +136,9 @@ router.get("/baithi", async (req, res) => {
     }
 });
 
+
 // Lấy danh sách câu hỏi kèm thông tin môn học
-router.get("/cauhoi/:id", async (req, res) => {
+router.get("/cauhoi", async (req, res) => {
     try {
         const cauhoiQuery = `
             SELECT 
@@ -188,7 +197,7 @@ router.get("/giaovien", async (req, res) => {
     }
 });
 
-//up
+//get theo id
 router.get("/giaovien/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -199,7 +208,7 @@ router.get("/giaovien/:id", async (req, res) => {
                 giaovien.monchinh, giaovien.lopdaychinh,
                 monhoc.tenmonhoc
             FROM giaovien
-            LEFT JOIN monhoc ON giaovien.monchinh = monhoc.id_monhoc
+            JOIN monhoc ON giaovien.monchinh = monhoc.id_monhoc
             WHERE giaovien.id_giaovien = ?
         `;
         const [rows] = await db.execute(giaovienQuery, [id]);
@@ -227,6 +236,7 @@ router.get("/giaovien/:id", async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Lấy danh sách đề thi kèm thông tin giáo viên và môn học
 router.get("/dethi", async (req, res) => {
@@ -265,9 +275,11 @@ router.get("/dethi", async (req, res) => {
     }
 });
 
-//up
+//get theo id
 router.get("/dethi/:id", async (req, res) => {
     try {
+        const { id } = req.params;
+
         const dethiQuery = `
             SELECT 
                 dethi.id_dethi, dethi.id_giaovien, dethi.id_monhoc, dethi.ngay_tao, dethi.thoigianthi, dethi.thoigianbatdau, dethi.thoigianketthuc, dethi.trangthai,
@@ -276,10 +288,16 @@ router.get("/dethi/:id", async (req, res) => {
             FROM dethi
             JOIN giaovien ON dethi.id_giaovien = giaovien.id_giaovien
             JOIN monhoc ON dethi.id_monhoc = monhoc.id_monhoc
+            WHERE dethi.id_dethi = ?
         `;
-        const [rows] = await db.execute(dethiQuery);
-        
-        const result = rows.map(row => ({
+        const [rows] = await db.execute(dethiQuery, [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Đề thi không tồn tại" });
+        }
+
+        const row = rows[0];
+        const result = {
             id_dethi: row.id_dethi,
             ngay_tao: row.ngay_tao,
             thoigianthi: row.thoigianthi,
@@ -287,20 +305,21 @@ router.get("/dethi/:id", async (req, res) => {
             thoigianketthuc: row.thoigianketthuc,
             trangthai: row.trangthai,
             giaovien: {
-                id_giaovin: row.id_giaovien,
+                id_giaovien: row.id_giaovien,
                 ten_giaovien: row.ten_giaovien
             },
             monhoc: {
                 id_monhoc: row.id_monhoc,
                 tenmonhoc: row.tenmonhoc
             }
-        }));
-        
+        };
+
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Lấy danh sách học sinh
 router.get("/hocsinh", async (req, res) => {
@@ -360,9 +379,11 @@ router.get("/cautraloi", async (req, res) => {
     }
 });
 
-//up
+//get theo id
 router.get("/cautraloi/:id", async (req, res) => {
     try {
+        const { id } = req.params;
+
         const cautraloiQuery = `
             SELECT 
                 cautraloi.id_cautraloi, cautraloi.id_cauhoi, cautraloi.noidungcautraloi,
@@ -371,10 +392,16 @@ router.get("/cautraloi/:id", async (req, res) => {
             FROM cautraloi
             JOIN cauhoi ON cautraloi.id_cauhoi = cauhoi.id_cauhoi
             JOIN monhoc ON cauhoi.id_monhoc = monhoc.id_monhoc
+            WHERE cautraloi.id_cautraloi = ?
         `;
-        const [rows] = await db.execute(cautraloiQuery);
-        
-        const result = rows.map(row => ({
+        const [rows] = await db.execute(cautraloiQuery, [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Câu trả lời không tồn tại" });
+        }
+
+        const row = rows[0];
+        const result = {
             id_cautraloi: row.id_cautraloi,
             noidungcautraloi: row.noidungcautraloi,
             cauhoi: {
@@ -386,13 +413,14 @@ router.get("/cautraloi/:id", async (req, res) => {
                     tenmonhoc: row.tenmonhoc
                 }
             }
-        }));
-        
+        };
+
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Lấy danh sách admin
 router.get("/admin", async (req, res) => {
