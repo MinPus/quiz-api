@@ -1,6 +1,54 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const router = express.Router();
 const db = require("../db"); // Kết nối database
+
+// Đăng ký admin
+router.post("/register", async (req, res) => {
+    const { id_admin, ten_admin, login, pass } = req.body;
+
+    // Kiểm tra trùng lặp tài khoản
+    db.query("SELECT * FROM admins WHERE login = ?", [login], async (err, results) => {
+        if (err) return res.status(500).json({ message: "Lỗi server" });
+        if (results.length > 0) return res.status(400).json({ message: "Tài khoản đã tồn tại" });
+        
+        // Mã hóa mật khẩu
+        const hashedPass = await bcrypt.hash(pass, 10);
+        
+        // Thêm admin mới
+        db.query("INSERT INTO admins (id_admin, ten_admin, login, pass) VALUES (?, ?, ?, ?)", 
+            [id_admin, ten_admin, login, hashedPass], 
+            (err, result) => {
+                if (err) return res.status(500).json({ message: "Lỗi server" });
+                res.status(201).json({ message: "Đăng ký thành công" });
+            }
+        );
+    });
+});
+
+// Đăng nhập admin
+router.post("/login", (req, res) => {
+    const { login, pass } = req.body;
+    
+    // Tìm admin theo login
+    db.query("SELECT * FROM admins WHERE login = ?", [login], async (err, results) => {
+        if (err) return res.status(500).json({ message: "Lỗi server" });
+        if (results.length === 0) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+        
+        const admin = results[0];
+        const isMatch = await bcrypt.compare(pass, admin.pass);
+        if (!isMatch) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+        
+        // Tạo JWT token
+        const token = jwt.sign(
+            { id_admin: admin.id_admin, login: admin.login }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: "1h" }
+        );
+        res.json({ message: "Đăng nhập thành công", token });
+    });
+});
 
 // Hàm tự động ánh xạ dữ liệu thành object theo khóa ngoại
 const mapObjectData = (data, mainKey, subKeys) => {
