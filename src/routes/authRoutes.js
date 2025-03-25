@@ -290,7 +290,7 @@
     try {
         const query = `
             SELECT 
-                *
+                id_dethi, id_cauhoi
             FROM dethi_cauhoi
         `;
         const [rows] = await db.execute(query);
@@ -305,6 +305,7 @@
         res.status(500).json({ error: error.message });
     }
 });
+
 
     // Lấy danh sách đề thi kèm thông tin giáo viên và môn học
     router.get("/dethi", async (req, res) => {
