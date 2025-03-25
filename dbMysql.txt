@@ -1,70 +1,96 @@
+-- Tạo bảng Admin
 CREATE TABLE admin (
-    id_admin INT PRIMARY KEY AUTO_INCREMENT,
-    ten_admin VARCHAR(255) NOT NULL,
-    login VARCHAR(255) UNIQUE NOT NULL,
-    pass VARCHAR(255) NOT NULL
+    id_admin VARCHAR(10) PRIMARY KEY,
+    ten_admin VARCHAR(30) NOT NULL,
+    login VARCHAR(20) NOT NULL,
+    pass VARCHAR(16) NOT NULL
 ) ENGINE=InnoDB;
 
+
+-- Tạo bảng Học Sinh
 CREATE TABLE hocsinh (
-    id_hocsinh INT PRIMARY KEY AUTO_INCREMENT,
-    ten_hocsinh VARCHAR(255) NOT NULL,
-    tendangnhap VARCHAR(255) UNIQUE NOT NULL,
-    matkhau VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20) UNIQUE NOT NULL
+    id_hocsinh VARCHAR(10) PRIMARY KEY,
+    ten_hocsinh VARCHAR(50) NOT NULL,
+    tendangnhap VARCHAR(20) NOT NULL,
+    matkhau VARCHAR(16) NOT NULL,
+    email VARCHAR(30) NOT NULL,
+    phone VARCHAR(15) NOT NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE giaovien (
-    id_giaovien INT PRIMARY KEY AUTO_INCREMENT,
-    ten_giaovien VARCHAR(255) NOT NULL,
-    tendangnhap_gv VARCHAR(255) UNIQUE NOT NULL,
-    matkhau_gv VARCHAR(255) NOT NULL,
-    email_gv VARCHAR(255) UNIQUE NOT NULL,
-    phone_gv VARCHAR(20) UNIQUE NOT NULL,
-    monchinh VARCHAR(255) NOT NULL,
-    lopdaychinh VARCHAR(255) NOT NULL
-) ENGINE=InnoDB;
 
+-- Tạo bảng Môn Học
 CREATE TABLE monhoc (
-    id_monhoc INT PRIMARY KEY AUTO_INCREMENT,
-    tenmonhoc VARCHAR(255) NOT NULL
+    id_monhoc VARCHAR(10) PRIMARY KEY,
+    tenmonhoc VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB;
 
+
+-- Tạo bảng Giáo Viên
+CREATE TABLE giaovien (
+    id_giaovien VARCHAR(10) PRIMARY KEY,
+    ten_giaovien VARCHAR(30) NOT NULL,
+    tendangnhap_gv VARCHAR(20) NOT NULL,
+    matkhau_gv VARCHAR(16) NOT NULL,
+    email_gv VARCHAR(30) NOT NULL,
+    phone_gv VARCHAR(15) NOT NULL,
+    monchinh VARCHAR(10) NULL,
+    lopdaychinh VARCHAR(10) NOT NULL,
+    FOREIGN KEY (monchinh) REFERENCES monhoc(id_monhoc) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+
+-- Tạo bảng Câu Hỏi
+CREATE TABLE cauhoi (
+    id_cauhoi VARCHAR(10) PRIMARY KEY,
+    noidungcauhoi VARCHAR(100) NOT NULL,
+    dapan VARCHAR(100) NOT NULL,
+    id_monhoc VARCHAR(10) NOT NULL,
+    FOREIGN KEY (id_monhoc) REFERENCES monhoc(id_monhoc) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+
+-- Tạo bảng Câu Trả Lời
+CREATE TABLE cautraloi (
+    id_cautraloi VARCHAR(10) PRIMARY KEY,
+    id_cauhoi VARCHAR(10) NOT NULL,
+    noidungcautraloi VARCHAR(100) NOT NULL,
+    FOREIGN KEY (id_cauhoi) REFERENCES cauhoi(id_cauhoi) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+
+-- Tạo bảng Đề Thi
 CREATE TABLE dethi (
-    id_dethi INT PRIMARY KEY AUTO_INCREMENT,
-    id_giaovien INT,
-    id_monhoc INT,
-    ngay_tao DATE NOT NULL,
-    thoigianthi INT NOT NULL,
+    id_dethi VARCHAR(10) PRIMARY KEY,
+    id_giaovien VARCHAR(10) NOT NULL,
+    id_monhoc VARCHAR(10) NOT NULL,
+    ngay_tao DATETIME NOT NULL,
+    thoigianthi INT(11) NOT NULL,
     thoigianbatdau DATETIME NOT NULL,
     thoigianketthuc DATETIME NOT NULL,
-    trangthai VARCHAR(50) NOT NULL,
+    trangthai VARCHAR(10) CHECK (trangthai IN ('onthi', 'dethi')),
     FOREIGN KEY (id_giaovien) REFERENCES giaovien(id_giaovien),
     FOREIGN KEY (id_monhoc) REFERENCES monhoc(id_monhoc)
 ) ENGINE=InnoDB;
 
-CREATE TABLE cauhoi (
-    id_cauhoi INT PRIMARY KEY AUTO_INCREMENT,
-    noidungcauhoi TEXT NOT NULL,
-    dapan TEXT NOT NULL,
-    id_monhoc INT,
-    FOREIGN KEY (id_monhoc) REFERENCES monhoc(id_monhoc)
+
+-- Tạo bảng trung gian giữa Đề Thi và Câu Hỏi (quan hệ N-N)
+CREATE TABLE dethi_cauhoi (
+    id_dethi VARCHAR(10) NOT NULL,
+    id_cauhoi VARCHAR(10) NOT NULL,
+    PRIMARY KEY (id_dethi, id_cauhoi),
+    FOREIGN KEY (id_dethi) REFERENCES dethi(id_dethi) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_cauhoi) REFERENCES cauhoi(id_cauhoi) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE cautraloi (
-    id_cautraloi INT PRIMARY KEY AUTO_INCREMENT,
-    id_cauhoi INT,
-    noidungcautraloi TEXT NOT NULL,
-    FOREIGN KEY (id_cauhoi) REFERENCES cauhoi(id_cauhoi)
-) ENGINE=InnoDB;
 
+-- Tạo bảng Bài Thi
 CREATE TABLE baithi (
-    id_baithi INT PRIMARY KEY AUTO_INCREMENT,
-    id_hocsinh INT,
-    id_dethi INT,
-    ngaylam DATE NOT NULL,
-    trangthai VARCHAR(50) NOT NULL,
-    diemthi FLOAT,
-    FOREIGN KEY (id_hocsinh) REFERENCES hocsinh(id_hocsinh),
-    FOREIGN KEY (id_dethi) REFERENCES dethi(id_dethi)
+    id_baithi VARCHAR(10) PRIMARY KEY,
+    id_hocsinh VARCHAR(10) NOT NULL,
+    id_dethi VARCHAR(10) NOT NULL,
+    ngaylam DATETIME NOT NULL,
+    trangthai VARCHAR(10) CHECK (trangthai IN ('danglam', 'hoanthanh')),
+    diemthi FLOAT NOT NULL,
+    FOREIGN KEY (id_hocsinh) REFERENCES hocsinh(id_hocsinh) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_dethi) REFERENCES dethi(id_dethi) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
