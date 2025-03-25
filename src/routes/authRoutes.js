@@ -132,6 +132,16 @@ router.get("/baithi", async (req, res) => {
     }
 });
 
+// API lấy danh sách dethi_cauhoi
+router.get('/dethi_cauhoi', async (req, res) => {
+    try {
+        let pool = await sql.connect(dbConfig);
+        let result = await pool.request().query('SELECT * FROM dethi_cauhoi');
+        res.status(200).json(result.recordset);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 //get theo id
 router.get("/baithi/:id", async (req, res) => {
     try {
