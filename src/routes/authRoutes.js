@@ -286,15 +286,25 @@
     });
 
     // API lấy danh sách dethi_cauhoi
-    router.get('/dethi_cauhoi', async (req, res) => {
-        try {
-            let pool = await sql.connect(dbConfig);
-            let result = await pool.request().query('SELECT * FROM dethi_cauhoi');
-            res.status(200).json(result.recordset);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
+    router.get("/dethi_cauhoi", async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                *
+            FROM dethi_cauhoi
+        `;
+        const [rows] = await db.execute(query);
+        
+        const result = rows.map(row => ({
+            id_dethi: row.id_dethi,
+            id_cauhoi: row.id_cauhoi
+        }));
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
     // Lấy danh sách đề thi kèm thông tin giáo viên và môn học
     router.get("/dethi", async (req, res) => {
