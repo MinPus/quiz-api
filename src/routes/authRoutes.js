@@ -308,7 +308,7 @@ router.get("/dethi", async (req, res) => {
             thoigianketthuc: row.thoigianketthuc,
             trangthai: row.trangthai,
             giaovien: {
-                id_giaovin: row.id_giaovien,
+                id_giaovien: row.id_giaovien,
                 ten_giaovien: row.ten_giaovien
             },
             monhoc: {
