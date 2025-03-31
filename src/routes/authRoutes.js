@@ -121,30 +121,30 @@ router.post("/giaovien/register", async (req, res) => {
 router.post("/giaovien/login", async (req, res) => {
     try {
         const { tendangnhap_gv, matkhau_gv } = req.body;
+        if (!tendangnhap_gv || !matkhau_gv) {
+            return res.status(400).json({ message: "Thiếu tên đăng nhập hoặc mật khẩu" });
+        }
 
-        // Tìm giáo viên theo tendangnhap_gv
         const [results] = await db.query("SELECT * FROM giaovien WHERE tendangnhap_gv = ?", [tendangnhap_gv]);
         if (results.length === 0) {
-            return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+            return res.status(400).json({ message: "Tài khoản không tồn tại" });
         }
 
         const giaovien = results[0];
         const isMatch = await bcrypt.compare(matkhau_gv, giaovien.matkhau_gv);
         if (!isMatch) {
-            return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+            return res.status(400).json({ message: "Mật khẩu không đúng" });
         }
 
-        // Tạo JWT token
         const token = jwt.sign(
             { id_giaovien: giaovien.id_giaovien, tendangnhap_gv: giaovien.tendangnhap_gv },
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
-
         res.json({ message: "Đăng nhập giáo viên thành công", token });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Lỗi server" });
+        console.error("Lỗi server:", err);
+        res.status(500).json({ message: "Lỗi server", error: err.message });
     }
 });
 
