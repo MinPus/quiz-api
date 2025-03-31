@@ -142,6 +142,12 @@ router.post("/giaovien/login", async (req, res) => {
             return res.status(400).json({ message: "Mật khẩu không đúng" });
         }
 
+        // Kiểm tra JWT_SECRET trước khi tạo token
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET không được định nghĩa trong biến môi trường");
+        }
+        console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
         const token = jwt.sign(
             { id_giaovien: giaovien.id_giaovien, tendangnhap_gv: giaovien.tendangnhap_gv },
             process.env.JWT_SECRET,
