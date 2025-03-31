@@ -121,17 +121,23 @@ router.post("/giaovien/register", async (req, res) => {
 router.post("/giaovien/login", async (req, res) => {
     try {
         const { tendangnhap_gv, matkhau_gv } = req.body;
+        console.log("Dữ liệu đăng nhập:", { tendangnhap_gv, matkhau_gv });
+
         if (!tendangnhap_gv || !matkhau_gv) {
             return res.status(400).json({ message: "Thiếu tên đăng nhập hoặc mật khẩu" });
         }
 
         const [results] = await db.query("SELECT * FROM giaovien WHERE tendangnhap_gv = ?", [tendangnhap_gv]);
+        console.log("Dữ liệu từ DB:", results);
+
         if (results.length === 0) {
             return res.status(400).json({ message: "Tài khoản không tồn tại" });
         }
 
         const giaovien = results[0];
         const isMatch = await bcrypt.compare(matkhau_gv, giaovien.matkhau_gv);
+        console.log("Mật khẩu gửi:", matkhau_gv, "Mật khẩu DB:", giaovien.matkhau_gv, "Khớp:", isMatch);
+
         if (!isMatch) {
             return res.status(400).json({ message: "Mật khẩu không đúng" });
         }
@@ -143,11 +149,10 @@ router.post("/giaovien/login", async (req, res) => {
         );
         res.json({ message: "Đăng nhập giáo viên thành công", token });
     } catch (err) {
-        console.error("Lỗi server:", err);
+        console.error("Lỗi đăng nhập giáo viên:", err);
         res.status(500).json({ message: "Lỗi server", error: err.message });
     }
 });
-
     // Middleware xác thực token
     const authenticate = (req, res, next) => {
         const authHeader = req.headers.authorization;
