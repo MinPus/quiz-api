@@ -112,8 +112,8 @@ router.post("/giaovien/register", async (req, res) => {
 
         res.status(201).json({ message: "Đăng ký giáo viên thành công" });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Lỗi server" });
+        console.error("Lỗi chi tiết:", err.message, err.stack);
+    res.status(500).json({ message: "Lỗi server", error: err.message })
     }
 });
 
