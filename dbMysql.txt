@@ -1,96 +1,314 @@
--- Tạo bảng Admin
-CREATE TABLE admin (
-    id_admin VARCHAR(10) PRIMARY KEY,
-    ten_admin VARCHAR(30) NOT NULL,
-    login VARCHAR(20) NOT NULL,
-    pass VARCHAR(16) NOT NULL
-) ENGINE=InnoDB;
+CREATE TABLE `admin` (
+  `id_admin` varchar(10) NOT NULL,
+  `ten_admin` varchar(30) CHARACTER SET utf8 NOT NULL,
+  `login` varchar(20) CHARACTER SET utf8 NOT NULL,
+  `pass` varchar(16) CHARACTER SET utf8 NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `admin`
+--
 
--- Tạo bảng Học Sinh
-CREATE TABLE hocsinh (
-    id_hocsinh VARCHAR(10) PRIMARY KEY,
-    ten_hocsinh VARCHAR(50) NOT NULL,
-    tendangnhap VARCHAR(20) NOT NULL,
-    matkhau VARCHAR(16) NOT NULL,
-    email VARCHAR(30) NOT NULL,
-    phone VARCHAR(15) NOT NULL
-) ENGINE=InnoDB;
+INSERT INTO `admin` (`id_admin`, `ten_admin`, `login`, `pass`) VALUES
+('A001', 'Nguyen Van A', 'adminA', 'pass1234'),
+('A002', 'Tran Thi B', 'adminB', 'pass5678'),
+('A003', 'Le Van C', 'adminC', 'pass91011');
 
+-- --------------------------------------------------------
 
--- Tạo bảng Môn Học
-CREATE TABLE monhoc (
-    id_monhoc VARCHAR(10) PRIMARY KEY,
-    tenmonhoc VARCHAR(50) NOT NULL
-) ENGINE=InnoDB;
+--
+-- Table structure for table `baithi`
+--
 
+CREATE TABLE `baithi` (
+  `id_baithi` varchar(10) NOT NULL,
+  `id_hocsinh` varchar(10) NOT NULL,
+  `id_dethi` varchar(10) NOT NULL,
+  `ngaylam` datetime NOT NULL,
+  `trangthai` varchar(10) DEFAULT NULL,
+  `diemthi` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tạo bảng Giáo Viên
-CREATE TABLE giaovien (
-    id_giaovien VARCHAR(10) PRIMARY KEY,
-    ten_giaovien VARCHAR(30) NOT NULL,
-    tendangnhap_gv VARCHAR(20) NOT NULL,
-    matkhau_gv VARCHAR(16) NOT NULL,
-    email_gv VARCHAR(30) NOT NULL,
-    phone_gv VARCHAR(15) NOT NULL,
-    monchinh VARCHAR(10) NULL,
-    lopdaychinh VARCHAR(10) NOT NULL,
-    FOREIGN KEY (monchinh) REFERENCES monhoc(id_monhoc) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB;
+--
+-- Dumping data for table `baithi`
+--
 
+INSERT INTO `baithi` (`id_baithi`, `id_hocsinh`, `id_dethi`, `ngaylam`, `trangthai`, `diemthi`) VALUES
+('BT001', 'HS001', 'DT001', '2025-03-15 08:00:00', 'hoanthanh', 9.5),
+('BT002', 'HS002', 'DT002', '2025-03-16 09:00:00', 'hoanthanh', 8),
+('BT003', 'HS003', 'DT003', '2025-03-17 10:00:00', 'hoanthanh', 7.5);
 
--- Tạo bảng Câu Hỏi
-CREATE TABLE cauhoi (
-    id_cauhoi VARCHAR(10) PRIMARY KEY,
-    noidungcauhoi VARCHAR(100) NOT NULL,
-    dapan VARCHAR(100) NOT NULL,
-    id_monhoc VARCHAR(10) NOT NULL,
-    FOREIGN KEY (id_monhoc) REFERENCES monhoc(id_monhoc) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+-- --------------------------------------------------------
 
+--
+-- Table structure for table `cauhoi`
+--
 
--- Tạo bảng Câu Trả Lời
-CREATE TABLE cautraloi (
-    id_cautraloi VARCHAR(10) PRIMARY KEY,
-    id_cauhoi VARCHAR(10) NOT NULL,
-    noidungcautraloi VARCHAR(100) NOT NULL,
-    FOREIGN KEY (id_cauhoi) REFERENCES cauhoi(id_cauhoi) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+CREATE TABLE `cauhoi` (
+  `id_cauhoi` varchar(10) NOT NULL,
+  `noidungcauhoi` varchar(100) NOT NULL,
+  `dapan` varchar(100) NOT NULL,
+  `id_monhoc` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `cauhoi`
+--
 
--- Tạo bảng Đề Thi
-CREATE TABLE dethi (
-    id_dethi VARCHAR(10) PRIMARY KEY,
-    id_giaovien VARCHAR(10) NOT NULL,
-    id_monhoc VARCHAR(10) NOT NULL,
-    ngay_tao DATETIME NOT NULL,
-    thoigianthi INT(11) NOT NULL,
-    thoigianbatdau DATETIME NOT NULL,
-    thoigianketthuc DATETIME NOT NULL,
-    trangthai VARCHAR(10) CHECK (trangthai IN ('onthi', 'dethi')),
-    FOREIGN KEY (id_giaovien) REFERENCES giaovien(id_giaovien),
-    FOREIGN KEY (id_monhoc) REFERENCES monhoc(id_monhoc)
-) ENGINE=InnoDB;
+INSERT INTO `cauhoi` (`id_cauhoi`, `noidungcauhoi`, `dapan`, `id_monhoc`) VALUES
+('CH001', '2 + 2 = ?', '4', 'MH001'),
+('CH002', 'Th? ?ô c?a Vi?t Nam là gì?', 'Hà N?i', 'MH002'),
+('CH003', 'What is the capital of France?', 'Paris', 'MH003');
 
+-- --------------------------------------------------------
 
--- Tạo bảng trung gian giữa Đề Thi và Câu Hỏi (quan hệ N-N)
-CREATE TABLE dethi_cauhoi (
-    id_dethi VARCHAR(10) NOT NULL,
-    id_cauhoi VARCHAR(10) NOT NULL,
-    PRIMARY KEY (id_dethi, id_cauhoi),
-    FOREIGN KEY (id_dethi) REFERENCES dethi(id_dethi) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_cauhoi) REFERENCES cauhoi(id_cauhoi) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+--
+-- Table structure for table `cautraloi`
+--
 
+CREATE TABLE `cautraloi` (
+  `id_cautraloi` varchar(10) NOT NULL,
+  `id_cauhoi` varchar(10) NOT NULL,
+  `noidungcautraloi` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- Tạo bảng Bài Thi
-CREATE TABLE baithi (
-    id_baithi VARCHAR(10) PRIMARY KEY,
-    id_hocsinh VARCHAR(10) NOT NULL,
-    id_dethi VARCHAR(10) NOT NULL,
-    ngaylam DATETIME NOT NULL,
-    trangthai VARCHAR(10) CHECK (trangthai IN ('danglam', 'hoanthanh')),
-    diemthi FLOAT NOT NULL,
-    FOREIGN KEY (id_hocsinh) REFERENCES hocsinh(id_hocsinh) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_dethi) REFERENCES dethi(id_dethi) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+--
+-- Dumping data for table `cautraloi`
+--
+
+INSERT INTO `cautraloi` (`id_cautraloi`, `id_cauhoi`, `noidungcautraloi`) VALUES
+('CTL001', 'CH001', '3'),
+('CTL002', 'CH001', '4'),
+('CTL003', 'CH001', '5');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dethi`
+--
+
+CREATE TABLE `dethi` (
+  `id_dethi` varchar(10) NOT NULL,
+  `id_giaovien` varchar(10) NOT NULL,
+  `id_monhoc` varchar(10) NOT NULL,
+  `tendethi` varchar(255) DEFAULT NULL,
+  `ngay_tao` datetime NOT NULL,
+  `thoigianthi` int(11) NOT NULL,
+  `trangthai` varchar(10) DEFAULT NULL,
+  `thoigianbatdau` datetime NOT NULL,
+  `thoigianketthuc` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `dethi`
+--
+
+INSERT INTO `dethi` (`id_dethi`, `id_giaovien`, `id_monhoc`, `tendethi`, `ngay_tao`, `thoigianthi`, `trangthai`, `thoigianbatdau`, `thoigianketthuc`) VALUES
+('DT001', 'GV001', 'MH001', 'tet', '2025-03-01 10:00:00', 2025, 'dethi', '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
+('DT002', 'GV002', 'MH002', 'téttt', '2025-03-02 11:00:00', 20, 'onthi', '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
+('DT003', 'GV003', 'MH003', 'toan', '2025-03-03 12:00:00', 2025, 'dethi', '0000-00-00 00:00:00', '0000-00-00 00:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dethi_cauhoi`
+--
+
+CREATE TABLE `dethi_cauhoi` (
+  `id_dethi` varchar(10) NOT NULL,
+  `id_cauhoi` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `dethi_cauhoi`
+--
+
+INSERT INTO `dethi_cauhoi` (`id_dethi`, `id_cauhoi`) VALUES
+('DT001', 'CH001'),
+('DT002', 'CH002'),
+('DT003', 'CH003');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `giaovien`
+--
+
+CREATE TABLE `giaovien` (
+  `id_giaovien` varchar(10) NOT NULL,
+  `ten_giaovien` varchar(30) NOT NULL,
+  `tendangnhap_gv` varchar(20) NOT NULL,
+  `matkhau_gv` varchar(255) NOT NULL,
+  `email_gv` varchar(30) NOT NULL,
+  `phone_gv` varchar(15) NOT NULL,
+  `monchinh` varchar(10) DEFAULT NULL,
+  `lopdaychinh` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `giaovien`
+--
+
+INSERT INTO `giaovien` (`id_giaovien`, `ten_giaovien`, `tendangnhap_gv`, `matkhau_gv`, `email_gv`, `phone_gv`, `monchinh`, `lopdaychinh`) VALUES
+('GV001', 'Nguyen Van Gd', 'gvG', 'gv1234', 'nguyengddddddd@example.com', '0123456789', 'MH001', 'Lop10A'),
+('GV002', 'Tran Tien Hung', 'gvH', 'gv5678', 'tranhdd@example.com', '0987654321', 'MH002', 'Lop11B'),
+('GV003', 'Le Van I', 'gvI', 'gv91011', 'lev@example.com', '0112233445', 'MH003', 'Lop12C'),
+('gv1', 'Nguyen Van A', 'gv123', '$2b$10$bRiyiD2Sm', 'gv@example.com', '0123456789', 'MH001', '10A'),
+('gv12', 'Nguyen Van A', 'gv1234', '$2b$10$/oQaQy.9AJrNIvvFk8hY9.L0P3dYbBZSqChRWkqLRe9aq6AhFVPKK', 'gv@example.com', '0123456789', 'MH001', '10A'),
+('gv3', 'Nguyen Van C', 'gv789', '$2b$10$lKuVDGU3E', 'gv3@example.com', '0123456789', 'MH001', '12A');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hocsinh`
+--
+
+CREATE TABLE `hocsinh` (
+  `id_hocsinh` varchar(10) NOT NULL,
+  `ten_hocsinh` varchar(50) NOT NULL,
+  `tendangnhap` varchar(20) NOT NULL,
+  `matkhau` varchar(255) NOT NULL,
+  `email` varchar(30) NOT NULL,
+  `phone` varchar(15) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `hocsinh`
+--
+
+INSERT INTO `hocsinh` (`id_hocsinh`, `ten_hocsinh`, `tendangnhap`, `matkhau`, `email`, `phone`) VALUES
+('HS001', 'Nguyen Van D', 'hsD', 'hs1234', 'nguyend@example.com', '0123456789'),
+('HS001222', 'Nguyen Van D', 'hsD4555', '$2b$10$U6x9VQOju8YxKJKkLbGKh.yE6BcUwtSPq6zE/X0QcfheIrZ.IkKvu', 'nguyend@example.com', '0123456789'),
+('HS002', 'Pham Thi E', 'hsE', 'hs5678', 'phamt@example.com', '0987654321'),
+('HS003', 'Bui Van F', 'hsF', 'hs91011', 'buiv@example.com', '0112233445'),
+('HS0035', 'Bui Van F', 'hsF1', '$2b$10$dyHoaIwnG850102.7tYmb.8UQoh1oaFHzwnYGHYVve7fZgl32X8LK', 'buiv@example.com', '0112233445');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `monhoc`
+--
+
+CREATE TABLE `monhoc` (
+  `id_monhoc` varchar(10) NOT NULL,
+  `tenmonhoc` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `monhoc`
+--
+
+INSERT INTO `monhoc` (`id_monhoc`, `tenmonhoc`) VALUES
+('MH001', 'Toan'),
+('MH002', 'Van'),
+('MH003', 'Anh');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `admin`
+--
+ALTER TABLE `admin`
+  ADD PRIMARY KEY (`id_admin`);
+
+--
+-- Indexes for table `baithi`
+--
+ALTER TABLE `baithi`
+  ADD PRIMARY KEY (`id_baithi`),
+  ADD KEY `id_hocsinh` (`id_hocsinh`),
+  ADD KEY `id_dethi` (`id_dethi`);
+
+--
+-- Indexes for table `cauhoi`
+--
+ALTER TABLE `cauhoi`
+  ADD PRIMARY KEY (`id_cauhoi`),
+  ADD KEY `id_monhoc` (`id_monhoc`);
+
+--
+-- Indexes for table `cautraloi`
+--
+ALTER TABLE `cautraloi`
+  ADD PRIMARY KEY (`id_cautraloi`),
+  ADD KEY `id_cauhoi` (`id_cauhoi`);
+
+--
+-- Indexes for table `dethi`
+--
+ALTER TABLE `dethi`
+  ADD PRIMARY KEY (`id_dethi`),
+  ADD KEY `id_giaovien` (`id_giaovien`),
+  ADD KEY `id_monhoc` (`id_monhoc`);
+
+--
+-- Indexes for table `dethi_cauhoi`
+--
+ALTER TABLE `dethi_cauhoi`
+  ADD PRIMARY KEY (`id_dethi`,`id_cauhoi`),
+  ADD KEY `id_cauhoi` (`id_cauhoi`);
+
+--
+-- Indexes for table `giaovien`
+--
+ALTER TABLE `giaovien`
+  ADD PRIMARY KEY (`id_giaovien`),
+  ADD KEY `monchinh` (`monchinh`);
+
+--
+-- Indexes for table `hocsinh`
+--
+ALTER TABLE `hocsinh`
+  ADD PRIMARY KEY (`id_hocsinh`);
+
+--
+-- Indexes for table `monhoc`
+--
+ALTER TABLE `monhoc`
+  ADD PRIMARY KEY (`id_monhoc`);
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `baithi`
+--
+ALTER TABLE `baithi`
+  ADD CONSTRAINT `baithi_ibfk_1` FOREIGN KEY (`id_hocsinh`) REFERENCES `hocsinh` (`id_hocsinh`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `baithi_ibfk_2` FOREIGN KEY (`id_dethi`) REFERENCES `dethi` (`id_dethi`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `cauhoi`
+--
+ALTER TABLE `cauhoi`
+  ADD CONSTRAINT `cauhoi_ibfk_1` FOREIGN KEY (`id_monhoc`) REFERENCES `monhoc` (`id_monhoc`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `cautraloi`
+--
+ALTER TABLE `cautraloi`
+  ADD CONSTRAINT `cautraloi_ibfk_1` FOREIGN KEY (`id_cauhoi`) REFERENCES `cauhoi` (`id_cauhoi`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `dethi`
+--
+ALTER TABLE `dethi`
+  ADD CONSTRAINT `dethi_ibfk_1` FOREIGN KEY (`id_giaovien`) REFERENCES `giaovien` (`id_giaovien`),
+  ADD CONSTRAINT `dethi_ibfk_2` FOREIGN KEY (`id_monhoc`) REFERENCES `monhoc` (`id_monhoc`);
+
+--
+-- Constraints for table `dethi_cauhoi`
+--
+ALTER TABLE `dethi_cauhoi`
+  ADD CONSTRAINT `dethi_cauhoi_ibfk_1` FOREIGN KEY (`id_dethi`) REFERENCES `dethi` (`id_dethi`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `dethi_cauhoi_ibfk_2` FOREIGN KEY (`id_cauhoi`) REFERENCES `cauhoi` (`id_cauhoi`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `giaovien`
+--
+ALTER TABLE `giaovien`
+  ADD CONSTRAINT `giaovien_ibfk_1` FOREIGN KEY (`monchinh`) REFERENCES `monhoc` (`id_monhoc`) ON DELETE SET NULL ON UPDATE CASCADE;
+COMMIT;
