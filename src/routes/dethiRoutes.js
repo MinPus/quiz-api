@@ -10,10 +10,19 @@ const verifyToken = async (req, res, next) => {
   }
 
   try {
+    // Kiểm tra token có định dạng JWT hợp lệ (3 phần: header.payload.signature)
+    if (token.split(".").length !== 3) {
+      return res.status(401).json({ message: "Invalid token format" });
+    }
+
     const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    if (!decoded.id) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
     req.user = decoded;
     next();
   } catch (err) {
+    console.error("Lỗi khi giải mã token:", err);
     return res.status(401).json({ message: "Invalid token" });
   }
 };
@@ -32,11 +41,15 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-
 // Get questions for an exam
 router.get("/:id/questions", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Kiểm tra id là số hợp lệ
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "ID đề thi không hợp lệ" });
+    }
 
     const [rows] = await pool.query(
       `SELECT c.*
@@ -65,8 +78,13 @@ router.get("/baithi", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
+    // Kiểm tra studentId là số hợp lệ
+    if (isNaN(studentId)) {
+      return res.status(400).json({ message: "ID học sinh không hợp lệ" });
+    }
+
     // Verify the user is authorized to view these submissions
-    if (req.user.id !== studentId && req.user.role !== "teacher") {
+    if (req.user.id !== studentId && (!req.user.role || req.user.role !== "teacher")) {
       return res.status(403).json({ message: "Không có quyền xem bài thi này" });
     }
 
@@ -95,8 +113,13 @@ router.post("/baithi", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
+    // Kiểm tra id_hocsinh và id_dethi là số hợp lệ
+    if (isNaN(id_hocsinh) || isNaN(id_dethi)) {
+      return res.status(400).json({ message: "ID học sinh hoặc ID đề thi không hợp lệ" });
+    }
+
     // Verify the student is authorized to submit
-    if (req.user.id !== id_hocsinh && req.user.role !== "teacher") {
+    if (req.user.id !== id_hocsinh && (!req.user.role || req.user.role !== "teacher")) {
       return res.status(403).json({ message: "Không có quyền nộp bài thi này" });
     }
 
@@ -119,6 +142,11 @@ router.delete("/baithi/:id_baithi", verifyToken, async (req, res) => {
   try {
     const { id_baithi } = req.params;
 
+    // Kiểm tra id_baithi hợp lệ
+    if (!id_baithi) {
+      return res.status(400).json({ message: "ID bài thi không hợp lệ" });
+    }
+
     // Verify the submission exists
     const [submissionRows] = await pool.query("SELECT * FROM baithi WHERE id_baithi = ?", [
       id_baithi,
@@ -129,7 +157,7 @@ router.delete("/baithi/:id_baithi", verifyToken, async (req, res) => {
 
     // Check if the user is authorized to delete this submission
     const submission = submissionRows[0];
-    if (submission.id_hocsinh !== req.user.id && req.user.role !== "teacher") {
+    if (submission.id_hocsinh !== req.user.id && (!req.user.role || req.user.role !== "teacher")) {
       return res.status(403).json({ message: "Không có quyền xóa bài thi này" });
     }
 
