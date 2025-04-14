@@ -1,6 +1,7 @@
 const cors = require("cors");
 const express = require("express");
 const dotenv = require("dotenv");
+
 const pool = require("./src/db");
 const fileRoutes = require("./src/routes/fileRoutes");
 const examRoutes = require("./src/routes/examRoutes");
@@ -8,8 +9,9 @@ const questionRoutes = require("./src/routes/questionRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const dethiRoutes = require("./src/routes/dethiRoutes"); // Fix the naming conflict
 
-dotenv.config();
 
+// Load biến môi trường từ .env
+dotenv.config();
 const app = express();
 
 // Middleware cho CORS
@@ -65,3 +67,4 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   await checkDatabaseConnection();
 });
+
