@@ -311,4 +311,3 @@ ALTER TABLE `dethi_cauhoi`
 --
 ALTER TABLE `giaovien`
   ADD CONSTRAINT `giaovien_ibfk_1` FOREIGN KEY (`monchinh`) REFERENCES `monhoc` (`id_monhoc`) ON DELETE SET NULL ON UPDATE CASCADE;
-COMMIT;
