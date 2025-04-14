@@ -1,69 +1,106 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-const { v4: uuidv4 } = require('uuid'); // Import UUID
+const { v4: uuidv4 } = require('uuid');
 
 // Thêm bài thi
 router.post('/exams', async (req, res) => {
-  try {
-    const {
-      id_giaovien,
-      id_monhoc,
-      tendethi,
-      ngay_tao,
-      thoigianthi,
-      trangthai,
-      thoigianbatdau,
-      thoigianketthuc,
-    } = req.body;
+  let connection;
+  let attempts = 0;
+  const maxAttempts = 3;
 
-    // Validate required fields
-    if (
-      !id_giaovien ||
-      !id_monhoc ||
-      !tendethi ||
-      !ngay_tao ||
-      !thoigianthi ||
-      !trangthai ||
-      !thoigianbatdau ||
-      !thoigianketthuc
-    ) {
-      return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+  while (attempts < maxAttempts) {
+    try {
+      const {
+        id_giaovien,
+        id_monhoc,
+        tendethi,
+        ngay_tao,
+        thoigianthi,
+        trangthai,
+        thoigianbatdau,
+        thoigianketthuc,
+      } = req.body;
+
+      // Validate required fields
+      if (
+        !id_giaovien ||
+        !id_monhoc ||
+        !tendethi ||
+        !ngay_tao ||
+        !thoigianthi ||
+        !trangthai ||
+        !thoigianbatdau ||
+        !thoigianketthuc
+      ) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+      }
+
+      // Generate id_dethi
+      const id_dethi = `DT${uuidv4().slice(0, 8)}`;
+
+      // Start transaction
+      connection = await pool.getConnection();
+      await connection.beginTransaction();
+
+      // Insert exam
+      const query = `
+        INSERT INTO dethi (id_dethi, id_giaovien, id_monhoc, tendethi, ngay_tao, thoigianthi, trangthai, thoigianbatdau, thoigianketthuc)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      const [result] = await connection.query(query, [
+        id_dethi,
+        id_giaovien,
+        id_monhoc,
+        tendethi,
+        ngay_tao,
+        thoigianthi,
+        trangthai,
+        thoigianbatdau,
+        thoigianketthuc,
+      ]);
+
+      if (result.affectedRows !== 1) {
+        throw new Error('Failed to insert exam');
+      }
+
+      await connection.commit();
+      res.status(201).json({
+        message: 'Tạo bài thi thành công',
+        exam: {
+          id_dethi,
+          id_giaovien,
+          id_monhoc,
+          tendethi,
+          ngay_tao,
+          thoigianthi,
+          trangthai,
+          thoigianbatdau,
+          thoigianketthuc,
+        },
+      });
+      return; // Exit loop on success
+    } catch (error) {
+      attempts++;
+      if (connection) await connection.rollback();
+      if (error.code === 'ER_DUP_ENTRY' && attempts < maxAttempts) {
+        console.warn(`Duplicate id_dethi detected, retrying (${attempts}/${maxAttempts})`);
+        continue;
+      }
+      console.error('Lỗi khi tạo bài thi:', error.message);
+      res.status(500).json({ message: 'Lỗi server', error: error.message });
+      return;
+    } finally {
+      if (connection) connection.release();
     }
-
-    // Generate unique id_dethi using UUID
-    const id_dethi = uuidv4();
-
-    console.log('Generated id_dethi:', id_dethi);
-    console.log('Received ngay_tao:', ngay_tao);
-
-    const query = `
-      INSERT INTO dethi (id_dethi, id_giaovien, id_monhoc, tendethi, ngay_tao, thoigianthi, trangthai, thoigianbatdau, thoigianketthuc)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    await pool.query(query, [
-      id_dethi,
-      id_giaovien,
-      id_monhoc,
-      tendethi,
-      ngay_tao,
-      thoigianthi,
-      trangthai,
-      thoigianbatdau,
-      thoigianketthuc,
-    ]);
-
-    res.status(200).json({ message: 'Tạo bài thi thành công', id_dethi });
-  } catch (error) {
-    console.error('Lỗi khi tạo bài thi:', error);
-    res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 });
 
-// Other routes (GET, PUT, DELETE) remain unchanged
+// Lấy chi tiết đề thi
 router.get('/dethi/:id_dethi', async (req, res) => {
   try {
     const { id_dethi } = req.params;
+    console.log('Fetching exam with id_dethi:', id_dethi);
 
     const examQuery = `
       SELECT d.*, m.tenmonhoc, g.ten_giaovien
@@ -75,6 +112,7 @@ router.get('/dethi/:id_dethi', async (req, res) => {
     const [examRows] = await pool.query(examQuery, [id_dethi]);
 
     if (examRows.length === 0) {
+      console.error('Exam not found for id_dethi:', id_dethi);
       return res.status(404).json({ message: 'Không tìm thấy đề thi' });
     }
 
@@ -113,6 +151,7 @@ router.get('/dethi/:id_dethi', async (req, res) => {
   }
 });
 
+// Cập nhật đề thi
 router.put('/dethi/:id_dethi', async (req, res) => {
   try {
     const { id_dethi } = req.params;
@@ -140,6 +179,7 @@ router.put('/dethi/:id_dethi', async (req, res) => {
   }
 });
 
+// Xóa đề thi
 router.delete('/dethi/:id_dethi', async (req, res) => {
   try {
     const { id_dethi } = req.params;

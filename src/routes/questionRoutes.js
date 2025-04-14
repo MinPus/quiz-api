@@ -3,90 +3,149 @@ const router = express.Router();
 const pool = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
+// routes/exams.js
+router.get('/exams/:id_dethi', async (req, res) => {
+  try {
+    const { id_dethi } = req.params;
+    console.log('Verifying exam with id_dethi:', id_dethi);
+
+    const examQuery = `SELECT id_dethi, ten_de, id_monhoc, ngay_tao FROM dethi WHERE id_dethi = ?`;
+    const [examRows] = await pool.query(examQuery, [id_dethi]);
+
+    if (examRows.length === 0) {
+      console.error('Exam not found for id_dethi:', id_dethi);
+      return res.status(404).json({ message: 'Không tìm thấy đề thi' });
+    }
+
+    res.status(200).json(examRows[0]);
+  } catch (error) {
+    console.error('Error verifying exam:', error.message);
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+});
+
 router.post('/questions', async (req, res) => {
-    let connection;
-    try {
-      const { examId, questions } = req.body;
-  
-      // Validate input
-      if (!examId || !questions || !Array.isArray(questions) || questions.length === 0) {
-        return res.status(400).json({ message: 'Thiếu examId hoặc danh sách câu hỏi' });
+  let connection;
+  try {
+    const { examId, questions } = req.body;
+
+    console.log('Received payload for /api/questions:', { examId, questions });
+
+    if (!examId) {
+      return res.status(400).json({ message: 'Thiếu examId' });
+    }
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ message: 'Danh sách câu hỏi không hợp lệ' });
+    }
+
+    for (const q of questions) {
+      if (!q.text?.trim() || !q.correctAnswer?.trim() || !q.options || !q.id_monhoc) {
+        return res.status(400).json({ message: 'Câu hỏi thiếu thông tin bắt buộc' });
       }
-  
-      // Validate each question
-      for (const q of questions) {
-        if (!q.text || !q.correctAnswer || !q.options || !q.id_monhoc) {
-          return res.status(400).json({ message: 'Câu hỏi thiếu thông tin bắt buộc' });
-        }
-        if (!Array.isArray(q.options) || q.options.length !== 4) {
-          return res.status(400).json({ message: 'Mỗi câu hỏi phải có đúng 4 lựa chọn' });
-        }
-        if (!q.options.includes(q.correctAnswer)) {
-          return res.status(400).json({ message: 'Đáp án đúng phải nằm trong các lựa chọn' });
-        }
+      if (!Array.isArray(q.options) || q.options.length !== 4) {
+        return res.status(400).json({ message: 'Mỗi câu hỏi phải có đúng 4 lựa chọn' });
       }
-  
-      // Verify exam exists
-      const examQuery = `SELECT id_dethi FROM dethi WHERE id_dethi = ?`;
-      const [examRows] = await pool.query(examQuery, [examId]);
-      if (examRows.length === 0) {
-        return res.status(404).json({ message: 'Không tìm thấy đề thi' });
+      if (!q.options.includes(q.correctAnswer)) {
+        return res.status(400).json({ message: 'Đáp án đúng phải nằm trong các lựa chọn' });
       }
-  
-      connection = await pool.getConnection();
-      await connection.beginTransaction();
-  
-      const newQuestions = [];
-  
-      for (const q of questions) {
-        const id_cauhoi = `CH${uuidv4().slice(0, 8)}`; // Shortened UUID for consistency
-        const queryCauhoi = `
-          INSERT INTO cauhoi (id_cauhoi, noidungcauhoi, dapan, id_monhoc)
-          VALUES (?, ?, ?, ?)
-        `;
-        await connection.query(queryCauhoi, [
-          id_cauhoi,
-          q.text,
-          q.correctAnswer,
-          q.id_monhoc,
-        ]);
-  
-        const optionsData = [];
-        for (const [index, option] of q.options.entries()) {
-          const id_cautraloi = `TL${uuidv4().slice(0, 8)}`;
-          const queryCauTraLoi = `
-            INSERT INTO cautraloi (id_cautraloi, id_cauhoi, noidungcautraloi)
-            VALUES (?, ?, ?)
-          `;
-          await connection.query(queryCauTraLoi, [id_cautraloi, id_cauhoi, option]);
-          optionsData.push(option);
-        }
-  
-        const queryDethiCauhoi = `
-          INSERT INTO dethi_cauhoi (id_dethi, id_cauhoi)
-          VALUES (?, ?)
-        `;
-        await connection.query(queryDethiCauhoi, [examId, id_cauhoi]);
-  
-        newQuestions.push({
-          id_cauhoi,
-          noidungcauhoi: q.text,
-          dapan: q.correctAnswer,
-          options: optionsData,
+    }
+
+    const normalizedExamId = String(examId).trim();
+    const examQuery = `SELECT id_dethi, id_monhoc FROM dethi WHERE id_dethi = ?`;
+    const [examRows] = await pool.query(examQuery, [normalizedExamId]);
+
+    if (examRows.length === 0) {
+      return res.status(404).json({
+        message: 'Không tìm thấy đề thi',
+        examId: normalizedExamId,
+      });
+    }
+
+    const examMonhoc = examRows[0].id_monhoc;
+    for (const q of questions) {
+      if (q.id_monhoc !== examMonhoc) {
+        return res.status(400).json({
+          message: 'id_monhoc của câu hỏi không khớp với đề thi',
         });
       }
-  
-      await connection.commit();
-      res.status(200).json({ message: 'Lưu câu hỏi thành công', questions: newQuestions });
-    } catch (error) {
-      console.error('Lỗi khi lưu câu hỏi:', error);
-      if (connection) {
-        await connection.rollback();
-        connection.release();
-      }
-      res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
-  });
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const newQuestions = [];
+
+    for (const q of questions) {
+      const id_cauhoi = `CH${uuidv4().slice(0, 8)}`;
+
+      const queryCauhoi = `
+        INSERT INTO cauhoi (id_cauhoi, noidungcauhoi, dapan, id_monhoc)
+        VALUES (?, ?, ?, ?)
+      `;
+      await connection.query(queryCauhoi, [
+        id_cauhoi,
+        q.text.trim(),
+        q.correctAnswer.trim(),
+        q.id_monhoc,
+      ]);
+
+      const optionsData = [];
+      for (const option of q.options) {
+        const id_cautraloi = `TL${uuidv4().slice(0, 8)}`;
+        const queryCauTraLoi = `
+          INSERT INTO cautraloi (id_cautraloi, id_cauhoi, noidungcautraloi)
+          VALUES (?, ?, ?)
+        `;
+        await connection.query(queryCauTraLoi, [id_cautraloi, id_cauhoi, option.trim()]);
+        optionsData.push(option.trim());
+      }
+
+      const queryDethiCauhoi = `
+        INSERT INTO dethi_cauhoi (id_dethi, id_cauhoi)
+        VALUES (?, ?)
+      `;
+      await connection.query(queryDethiCauhoi, [normalizedExamId, id_cauhoi]);
+
+      newQuestions.push({
+        id_cauhoi,
+        noidungcauhoi: q.text.trim(),
+        dapan: q.correctAnswer.trim(),
+        options: optionsData,
+        id_monhoc: q.id_monhoc,
+      });
+    }
+
+    await connection.commit();
+    res.status(200).json({
+      message: 'Lưu câu hỏi thành công',
+      questions: newQuestions,
+    });
+  } catch (error) {
+    console.error('Error saving questions:', error.message, error.stack);
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
+    if (error.code === 'ER_NO_REFERENCED_ROW') {
+      return res.status(400).json({
+        message: 'Dữ liệu không hợp lệ (môn học hoặc đề thi không tồn tại)',
+      });
+    }
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({
+        message: 'ID câu hỏi hoặc đáp án trùng lặp, vui lòng thử lại',
+      });
+    }
+    res.status(500).json({
+      message: 'Lỗi server',
+      error: error.message,
+    });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
+});
 
 // Update a question
 router.put('/questions/:id_cauhoi', async (req, res) => {
