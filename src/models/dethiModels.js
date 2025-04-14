@@ -3,6 +3,7 @@ const dethi = {
         id_dethi,
         id_giaovien,
         id_monhoc,
+        tendethi,
         ngay_tao,
         thoigianthi,
         thoigianbatdau,
