@@ -28,7 +28,7 @@ const verifyToken = async (req, res, next) => {
 };
 
 // Get all exams
-router.get("/", verifyToken, async (req, res) => {
+router.get("/dethis", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM dethi");
     if (rows.length === 0) {
@@ -42,7 +42,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // Get questions for an exam
-router.get("/:id/questions", verifyToken, async (req, res) => {
+router.get("/:id/cauhois", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
 
