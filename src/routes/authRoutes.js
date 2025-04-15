@@ -1,132 +1,132 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid"); // Thêm thư viện uuid
 const router = express.Router();
-const db = require("../db"); // Kết nối database
+const db = require("../db");
 
-        // Hàm kiểm tra trùng lặp tài khoản
+// Hàm kiểm tra trùng lặp tài khoản
 const checkDuplicate = async (table, column, value) => {
-const [results] = await db.query(`SELECT * FROM ${table} WHERE ${column} = ?`, [value]);
-return results.length > 0;
+  const [results] = await db.query(`SELECT * FROM ${table} WHERE ${column} = ?`, [value]);
+  return results.length > 0;
 };
 
 // Hàm thêm bản ghi mới vào database
 const insertRecord = async (table, data) => {
-const keys = Object.keys(data).join(", ");
-const values = Object.values(data);
-const placeholders = values.map(() => "?").join(", ");
-await db.query(`INSERT INTO ${table} (${keys}) VALUES (${placeholders})`, values);
+  const keys = Object.keys(data).join(", ");
+  const values = Object.values(data);
+  const placeholders = values.map(() => "?").join(", ");
+  await db.query(`INSERT INTO ${table} (${keys}) VALUES (${placeholders})`, values);
+};
+
+// Hàm tạo ID theo định dạng
+const generateId = (prefix) => {
+  const uuid = uuidv4().replace(/-/g, ""); // Loại bỏ dấu gạch ngang
+  return `${prefix}${uuid.slice(0, 8)}`; // Lấy 8 ký tự đầu tiên và thêm tiền tố
 };
 
 // Đăng ký học sinh
 router.post("/hocsinh/register", async (req, res) => {
-    try {
-        console.log("Dữ liệu nhận được:", req.body);
+  try {
+    console.log("Dữ liệu nhận được:", req.body);
 
-        // Kiểm tra body có rỗng không
-        if (Object.keys(req.body).length === 0) {
-            return res.status(400).json({ message: "Không nhận được dữ liệu trong body" });
-        }
-
-        const { id_hocsinh, ten_hocsinh, tendangnhap, matkhau, email, phone } = req.body;
-
-        // Kiểm tra các field bắt buộc
-        if (!id_hocsinh || !ten_hocsinh || !tendangnhap || !matkhau || !email || !phone) {
-            return res.status(400).json({ 
-                message: "Vui lòng cung cấp đầy đủ thông tin: id_hocsinh, ten_hocsinh, tendangnhap, matkhau, email, phone" 
-            });
-        }
-
-        // Kiểm tra trùng lặp tài khoản
-        if (await checkDuplicate("hocsinh", "tendangnhap", tendangnhap)) {
-            return res.status(400).json({ message: "Tài khoản học sinh đã tồn tại" });
-        }
-
-        // Mã hóa mật khẩu
-        const hashedPass = await bcrypt.hash(matkhau, 10);
-
-        const data = {
-            id_hocsinh,
-            ten_hocsinh,
-            tendangnhap,
-            matkhau: hashedPass,
-            email,
-            phone,
-        };
-
-        await insertRecord("hocsinh", data);
-
-        res.status(201).json({ message: "Đăng ký học sinh thành công" });
-    } catch (err) {
-        console.error("Lỗi chi tiết:", err.message, err.stack);
-        res.status(500).json({ message: "Lỗi server", error: err.message });
-    }
-});
-
-// Đăng nhập học sinh
-router.post("/hocsinh/login", async (req, res) => {
-try {
-    const { tendangnhap, matkhau } = req.body;
-
-    // Tìm học sinh theo tendangnhap
-    const [results] = await db.query("SELECT * FROM hocsinh WHERE tendangnhap = ?", [tendangnhap]);
-    if (results.length === 0) {
-        return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    // Kiểm tra body có rỗng không
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "Không nhận được dữ liệu trong body" });
     }
 
-    const hocsinh = results[0];
-    const isMatch = await bcrypt.compare(matkhau, hocsinh.matkhau);
-    if (!isMatch) {
-        return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    const { ten_hocsinh, tendangnhap, matkhau, email, phone } = req.body;
+
+    // Kiểm tra các field bắt buộc
+    if (!ten_hocsinh || !tendangnhap || !matkhau || !email || !phone) {
+      return res.status(400).json({
+        message:
+          "Vui lòng cung cấp đầy đủ thông tin: ten_hocsinh, tendangnhap, matkhau, email, phone",
+      });
     }
 
-    // Tạo JWT token
-    const token = jwt.sign(
-        { id_hocsinh: hocsinh.id_hocsinh, tendangnhap: hocsinh.tendangnhap },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-    );
+    // Kiểm tra trùng lặp tài khoản
+    if (await checkDuplicate("hocsinh", "tendangnhap", tendangnhap)) {
+      return res.status(400).json({ message: "Tài khoản học sinh đã tồn tại" });
+    }
 
-    res.json({ message: "Đăng nhập học sinh thành công", token });
-} catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Lỗi server" });
-}
+    // Tạo ID học sinh tự động
+    const id_hocsinh = generateId("SV");
+
+    // Mã hóa mật khẩu
+    const hashedPass = await bcrypt.hash(matkhau, 10);
+
+    const data = {
+      id_hocsinh,
+      ten_hocsinh,
+      tendangnhap,
+      matkhau: hashedPass,
+      email,
+      phone,
+    };
+
+    await insertRecord("hocsinh", data);
+
+    res.status(201).json({ message: "Đăng ký học sinh thành công", id_hocsinh });
+  } catch (err) {
+    console.error("Lỗi chi tiết:", err.message, err.stack);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
 });
 
 // Đăng ký giáo viên
 router.post("/giaovien/register", async (req, res) => {
-try {
-    const { id_giaovien, ten_giaovien, tendangnhap_gv, matkhau_gv, email_gv, phone_gv, monchinh, lopdaychinh } = req.body;
+  try {
+    const { ten_giaovien, tendangnhap_gv, matkhau_gv, email_gv, phone_gv, monchinh, lopdaychinh } =
+      req.body;
+
+    // Kiểm tra các field bắt buộc
+    if (
+      !ten_giaovien ||
+      !tendangnhap_gv ||
+      !matkhau_gv ||
+      !email_gv ||
+      !phone_gv ||
+      !monchinh ||
+      !lopdaychinh
+    ) {
+      return res.status(400).json({
+        message:
+          "Vui lòng cung cấp đầy đủ thông tin: ten_giaovien, tendangnhap_gv, matkhau_gv, email_gv, phone_gv, monchinh, lopdaychinh",
+      });
+    }
 
     // Kiểm tra trùng lặp tài khoản
     if (await checkDuplicate("giaovien", "tendangnhap_gv", tendangnhap_gv)) {
-        return res.status(400).json({ message: "Tài khoản giáo viên đã tồn tại" });
+      return res.status(400).json({ message: "Tài khoản giáo viên đã tồn tại" });
     }
+
+    // Tạo ID giáo viên tự động
+    const id_giaovien = generateId("GV");
 
     // Mã hóa mật khẩu
     const hashedPass = await bcrypt.hash(matkhau_gv, 10);
 
     // Dữ liệu giáo viên
     const data = {
-        id_giaovien,
-        ten_giaovien,
-        tendangnhap_gv,
-        matkhau_gv: hashedPass,
-        email_gv,
-        phone_gv,
-        monchinh,
-        lopdaychinh,
+      id_giaovien,
+      ten_giaovien,
+      tendangnhap_gv,
+      matkhau_gv: hashedPass,
+      email_gv,
+      phone_gv,
+      monchinh,
+      lopdaychinh,
     };
 
     // Thêm giáo viên mới
     await insertRecord("giaovien", data);
 
-    res.status(201).json({ message: "Đăng ký giáo viên thành công" });
-} catch (err) {
+    res.status(201).json({ message: "Đăng ký giáo viên thành công", id_giaovien });
+  } catch (err) {
     console.error("Lỗi chi tiết:", err.message, err.stack);
-res.status(500).json({ message: "Lỗi server", error: err.message })
-}
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
 });
 
 // Đăng nhập giáo viên
