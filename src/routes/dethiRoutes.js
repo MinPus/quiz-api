@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
+const jwt = require("jsonwebtoken");
 
 // Middleware xác thực token
 const verifyToken = async (req, res, next) => {
@@ -10,60 +11,102 @@ const verifyToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    // Verify JWT token using secret key
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret");
+    if (!decoded.id || !decoded.role) {
+      return res.status(401).json({ message: "Token thiếu thông tin id hoặc role" });
+    }
+
+    // Kiểm tra xem id có tồn tại trong bảng hocsinh nếu là học sinh
+    if (decoded.role === "student") {
+      const [userRows] = await pool.query("SELECT id_hocsinh FROM hocsinh WHERE id_hocsinh = ?", [decoded.id]);
+      if (userRows.length === 0) {
+        return res.status(401).json({ message: "ID học sinh không hợp lệ" });
+      }
+    }
+
     req.user = decoded;
     next();
   } catch (err) {
+    console.error("Lỗi khi xác thực token:", err);
     return res.status(401).json({ message: "Token không hợp lệ" });
   }
 };
 
-// Lấy danh sách đề thi
-router.get("/", verifyToken, async (req, res) => {
+// Kiểm tra quyền truy cập đề thi
+router.get("/access/:id_dethi", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM dethi");
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error("Lỗi khi lấy danh sách đề thi:", error);
-    res.status(500).json({ message: "Lỗi server" });
-  }
-});
+    const { id_dethi } = req.params;
+    const user = req.user;
 
-// Lấy thông tin đề thi và câu hỏi
-router.get("/:id", verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
+    if (user.role !== "student") {
+      return res.status(403).json({ message: "Chỉ học sinh mới có thể kiểm tra quyền truy cập" });
+    }
 
-    // Lấy thông tin đề thi
-    const [examRows] = await pool.query("SELECT * FROM dethi WHERE id_dethi = ?", [id]);
+    // Kiểm tra xem đề thi có tồn tại không
+    const [examRows] = await pool.query("SELECT is_restricted FROM dethi WHERE id_dethi = ?", [id_dethi]);
     if (examRows.length === 0) {
       return res.status(404).json({ message: "Không tìm thấy đề thi" });
     }
 
-    // Lấy danh sách câu hỏi
-    const [questionRows] = await pool.query(
-      `SELECT c.*, dc.stt
-       FROM cauhoi c
-       JOIN dethi_cauhoi dc ON c.id_cauhoi = dc.id_cauhoi
-       WHERE dc.id_dethi = ?
-       ORDER BY dc.stt`,
-      [id]
+    const exam = examRows[0];
+
+    // Nếu không bị hạn chế, mọi học sinh đều có quyền truy cập
+    if (exam.is_restricted === 0) {
+      return res.status(200).json({ hasAccess: true });
+    }
+
+    // Nếu bị hạn chế, kiểm tra trong bảng dethi_hocsinh
+    const [accessRows] = await pool.query(
+      "SELECT * FROM dethi_hocsinh WHERE id_dethi = ? AND id_hocsinh = ?",
+      [id_dethi, user.id]
     );
 
-    // Gắn danh sách đáp án (options) cho từng câu hỏi
-    const questions = questionRows.map((question) => ({
-      ...question,
-      options: [question.dapanA, question.dapanB, question.dapanC, question.dapanD].filter(
-        (option) => option
-      ),
-    }));
-
-    res.status(200).json({
-      ...examRows[0],
-      questions,
-    });
+    const hasAccess = accessRows.length > 0;
+    return res.status(200).json({ hasAccess });
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin đề thi:", error);
+    console.error("Lỗi khi kiểm tra quyền truy cập đề thi:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+// Lấy danh sách đề thi
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const user = req.user;
+    let query = `
+      SELECT d.*, m.tenmonhoc, g.ten_giaovien
+      FROM dethi d
+      JOIN monhoc m ON d.id_monhoc = m.id_monhoc
+      JOIN giaovien g ON d.id_giaovien = g.id_giaovien
+      WHERE d.trangthai = 'dethi'
+      AND d.thoigianketthuc > NOW()
+    `;
+    let queryParams = [];
+
+    // Nếu là học sinh, lọc các đề thi mà học sinh được phép truy cập
+    if (user.role === "student") {
+      query = `
+        SELECT DISTINCT d.*, m.tenmonhoc, g.ten_giaovien
+        FROM dethi d
+        JOIN monhoc m ON d.id_monhoc = m.id_monhoc
+        JOIN giaovien g ON d.id_giaovien = g.id_giaovien
+        LEFT JOIN dethi_hocsinh dh ON d.id_dethi = dh.id_dethi
+        WHERE d.trangthai = 'dethi'
+        AND d.thoigianketthuc > NOW()
+        AND (
+          d.is_restricted = 0
+          OR (d.is_restricted = 1 AND dh.id_hocsinh = ?)
+        )
+      `;
+      queryParams = [user.id];
+    }
+
+    const [rows] = await pool.query(query, queryParams);
+    console.log(`Exams fetched for user ${user.id}:`, JSON.stringify(rows, null, 2));
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách đề thi:", error);
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -108,6 +151,23 @@ router.post("/baithi", verifyToken, async (req, res) => {
 
     if (req.user.id !== id_hocsinh && req.user.role !== "teacher") {
       return res.status(403).json({ message: "Không có quyền nộp bài thi" });
+    }
+
+    // Kiểm tra quyền truy cập đề thi bị hạn chế
+    const [examRows] = await pool.query("SELECT * FROM dethi WHERE id_dethi = ?", [id_dethi]);
+    if (examRows.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy đề thi" });
+    }
+
+    const exam = examRows[0];
+    if (req.user.role === "student" && exam.is_restricted === 1) {
+      const [accessRows] = await pool.query(
+        "SELECT * FROM dethi_hocsinh WHERE id_dethi = ? AND id_hocsinh = ?",
+        [id_dethi, id_hocsinh]
+      );
+      if (accessRows.length === 0) {
+        return res.status(403).json({ message: "Bạn không có quyền nộp bài thi này" });
+      }
     }
 
     const id_baithi = `BT${Date.now()}`;

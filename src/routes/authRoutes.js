@@ -74,6 +74,33 @@ router.post("/hocsinh/register", async (req, res) => {
   }
 });
 
+router.post("/hocsinh/login", async (req, res) => {
+    try {
+      console.log("Yêu cầu đăng nhập học sinh:", req.body);
+      const { tendangnhap, matkhau } = req.body;
+      const [results] = await db.query("SELECT * FROM hocsinh WHERE tendangnhap = ?", [tendangnhap]);
+      console.log("Kết quả DB:", results);
+      if (results.length === 0) {
+        return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+      }
+      const hocsinh = results[0];
+      const isMatch = await bcrypt.compare(matkhau, hocsinh.matkhau);
+      console.log("Kết quả so sánh mật khẩu:", isMatch);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+      }
+      const token = jwt.sign(
+        { id_hocsinh: hocsinh.id_hocsinh, tendangnhap: hocsinh.tendangnhap },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      res.json({ message: "Đăng nhập học sinh thành công", token });
+    } catch (err) {
+      console.error("Lỗi đăng nhập học sinh:", err);
+      res.status(500).json({ message: "Lỗi server", error: err.message });
+    }
+  });
+
 // Đăng ký giáo viên
 router.post("/giaovien/register", async (req, res) => {
   try {
@@ -188,50 +215,83 @@ const authenticate = (req, res, next) => {
     }
 };
 // Đăng ký admin
-router.post("/register", async (req, res) => {
-    const { id_admin, ten_admin, login, pass } = req.body;
+router.post("/admin/register", async (req, res) => {
+    try {
+        const { ten_admin, login, pass } = req.body;
 
-    // Kiểm tra trùng lặp tài khoản
-    db.query("SELECT * FROM admins WHERE login = ?", [login], async (err, results) => {
-        if (err) return res.status(500).json({ message: "Lỗi server" });
-        if (results.length > 0) return res.status(400).json({ message: "Tài khoản đã tồn tại" });
-        
+        // Kiểm tra các trường bắt buộc
+        if (!ten_admin || !login || !pass) {
+            return res.status(400).json({
+                message: "Vui lòng cung cấp đầy đủ thông tin: ten_admin, login, pass",
+            });
+        }
+
+        // Kiểm tra trùng lặp tài khoản
+        const [results] = await db.query("SELECT * FROM admin WHERE login = ?", [login]);
+        if (results.length > 0) {
+            return res.status(400).json({ message: "Tài khoản đã tồn tại" });
+        }
+
+        // Tạo ID admin tự động
+        const id_admin = generateId("ADM");
+
         // Mã hóa mật khẩu
-        const hashedPass = await bcrypt.hash(pass, 10);
-        
-        // Thêm admin mới
-        db.query("INSERT INTO admins (id_admin, ten_admin, login, pass) VALUES (?, ?, ?, ?)", 
-            [id_admin, ten_admin, login, hashedPass], 
-            (err, result) => {
-                if (err) return res.status(500).json({ message: "Lỗi server" });
-                res.status(201).json({ message: "Đăng ký thành công" });
-            }
-        );
-    });
-});
+        let hashedPass;
+        try {
+            hashedPass = await bcrypt.hash(pass, 10);
+        } catch (hashErr) {
+            console.error("Lỗi mã hóa mật khẩu:", hashErr.message, hashErr.stack);
+            return res.status(500).json({ message: "Lỗi mã hóa mật khẩu", error: hashErr.message });
+        }
 
+        // Thêm admin mới vào bảng admin
+        await db.query(
+            "INSERT INTO admin (id_admin, ten_admin, login, pass) VALUES (?, ?, ?, ?)",
+            [id_admin, ten_admin, login, hashedPass]
+        );
+
+        res.status(201).json({ message: "Đăng ký thành công", id_admin });
+    } catch (err) {
+        console.error("Lỗi đăng ký admin:", err.message, err.stack);
+        res.status(500).json({ message: "Lỗi server", error: err.message });
+    }
+});
 // Đăng nhập admin
-router.post("/login", (req, res) => {
-    const { login, pass } = req.body;
-    
-    // Tìm admin theo login
-    db.query("SELECT * FROM admins WHERE login = ?", [login], async (err, results) => {
-        if (err) return res.status(500).json({ message: "Lỗi server" });
-        if (results.length === 0) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
-        
+router.post("/admin/login", async (req, res) => {
+    try {
+        const { login, pass } = req.body;
+
+        // Kiểm tra các trường bắt buộc
+        if (!login || !pass) {
+            return res.status(400).json({ message: "Vui lòng cung cấp login và pass" });
+        }
+
+        // Tìm admin theo login
+        const [results] = await db.query("SELECT * FROM admin WHERE login = ?", [login]);
+        if (results.length === 0) {
+            return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+        }
+
         const admin = results[0];
         const isMatch = await bcrypt.compare(pass, admin.pass);
-        if (!isMatch) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
-        
+        if (!isMatch) {
+            return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+        }
+
         // Tạo JWT token
         const token = jwt.sign(
-            { id_admin: admin.id_admin, login: admin.login }, 
-            process.env.JWT_SECRET, 
+            { id_admin: admin.id_admin, login: admin.login },
+            process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
+
         res.json({ message: "Đăng nhập thành công", token });
-    });
+    } catch (err) {
+        console.error("Lỗi đăng nhập admin:", err.message, err.stack);
+        res.status(500).json({ message: "Lỗi server", error: err.message });
+    }
 });
+
 
 // Hàm tự động ánh xạ dữ liệu thành object theo khóa ngoại
 const mapObjectData = (data, mainKey, subKeys) => {
@@ -469,7 +529,9 @@ router.get("/dethi", async (req, res) => {
     try {
         const dethiQuery = `
             SELECT 
-                dethi.id_dethi, dethi.id_giaovien, dethi.id_monhoc, dethi.tendethi, dethi.ngay_tao, dethi.thoigianthi, dethi.thoigianbatdau, dethi.thoigianketthuc, dethi.trangthai,
+                dethi.id_dethi, dethi.id_giaovien, dethi.id_monhoc, dethi.tendethi, dethi.ngay_tao, 
+                dethi.thoigianthi, dethi.thoigianbatdau, dethi.thoigianketthuc, dethi.trangthai, 
+                dethi.is_restricted,
                 giaovien.ten_giaovien,
                 monhoc.tenmonhoc
             FROM dethi
@@ -486,6 +548,7 @@ router.get("/dethi", async (req, res) => {
             thoigianbatdau: row.thoigianbatdau,
             thoigianketthuc: row.thoigianketthuc,
             trangthai: row.trangthai,
+            is_restricted: row.is_restricted, // Include is_restricted in the response
             giaovien: {
                 id_giaovien: row.id_giaovien,
                 ten_giaovien: row.ten_giaovien
@@ -496,8 +559,17 @@ router.get("/dethi", async (req, res) => {
             }
         }));
         
+        // Log the result to verify is_restricted values
+        console.log("Exams fetched:", result.map(exam => ({
+            id_dethi: exam.id_dethi,
+            tendethi: exam.tendethi,
+            is_restricted: exam.is_restricted,
+            type: typeof exam.is_restricted
+        })));
+
         res.json(result);
     } catch (error) {
+        console.error("Error fetching exams:", error);
         res.status(500).json({ error: error.message });
     }
 });
