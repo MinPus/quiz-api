@@ -1,8 +1,39 @@
-CREATE TABLE `admin` (
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1:3306
+-- Generation Time: Apr 20, 2025 at 07:20 PM
+-- Server version: 8.2.0
+-- PHP Version: 8.2.13
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `quiz`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin`
+--
+
+DROP TABLE IF EXISTS `admin`;
+CREATE TABLE IF NOT EXISTS `admin` (
   `id_admin` varchar(10) NOT NULL,
-  `ten_admin` varchar(30) CHARACTER SET utf8 NOT NULL,
-  `login` varchar(20) CHARACTER SET utf8 NOT NULL,
-  `pass` varchar(16) CHARACTER SET utf8 NOT NULL
+  `ten_admin` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `login` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `pass` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  PRIMARY KEY (`id_admin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -11,8 +42,7 @@ CREATE TABLE `admin` (
 
 INSERT INTO `admin` (`id_admin`, `ten_admin`, `login`, `pass`) VALUES
 ('A001', 'Nguyen Van A', 'adminA', 'pass1234'),
-('A002', 'Tran Thi B', 'adminB', 'pass5678'),
-('A003', 'Le Van C', 'adminC', 'pass91011');
+('ADM49eae9e', 'admin', 'admin', '$2b$10$LcT3kGU729k5uAjEYmxHcuJ1419D/ST8IFdLYeAALV5OWpLwOvewy');
 
 -- --------------------------------------------------------
 
@@ -20,13 +50,17 @@ INSERT INTO `admin` (`id_admin`, `ten_admin`, `login`, `pass`) VALUES
 -- Table structure for table `baithi`
 --
 
-CREATE TABLE `baithi` (
+DROP TABLE IF EXISTS `baithi`;
+CREATE TABLE IF NOT EXISTS `baithi` (
   `id_baithi` varchar(10) NOT NULL,
   `id_hocsinh` varchar(10) NOT NULL,
   `id_dethi` varchar(10) NOT NULL,
   `ngaylam` datetime NOT NULL,
   `trangthai` varchar(10) DEFAULT NULL,
-  `diemthi` float NOT NULL
+  `diemthi` float NOT NULL,
+  PRIMARY KEY (`id_baithi`),
+  KEY `id_hocsinh` (`id_hocsinh`),
+  KEY `id_dethi` (`id_dethi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -34,9 +68,20 @@ CREATE TABLE `baithi` (
 --
 
 INSERT INTO `baithi` (`id_baithi`, `id_hocsinh`, `id_dethi`, `ngaylam`, `trangthai`, `diemthi`) VALUES
-('BT001', 'HS001', 'DT001', '2025-03-15 08:00:00', 'hoanthanh', 9.5),
-('BT002', 'HS002', 'DT002', '2025-03-16 09:00:00', 'hoanthanh', 8),
-('BT003', 'HS003', 'DT003', '2025-03-17 10:00:00', 'hoanthanh', 7.5);
+('BT075c94a8', 'SVe4be66dd', 'DTf8f8c59c', '2025-04-20 17:47:04', 'hoanthanh', 2.5),
+('BT0e182a64', 'SVe4be66dd', 'DT17445626', '2025-04-20 17:36:02', 'hoanthanh', 10),
+('BT1b91c4da', 'SVe4be66dd', 'DTf8f8c59c', '2025-04-20 18:37:22', 'hoanthanh', 0),
+('BT3a7cddbe', 'SVe4be66dd', 'DT17445626', '2025-04-20 17:44:23', 'hoanthanh', 5),
+('BT5ac3535a', 'SVe4be66dd', 'DT42d54769', '2025-04-20 18:37:44', 'hoanthanh', 2.5),
+('BT7354df9e', 'SVe4be66dd', 'DTf8f8c59c', '2025-04-20 18:37:34', 'hoanthanh', 10),
+('BT7954c3be', 'HS004', 'DT17445626', '2025-04-14 21:14:37', 'hoanthanh', 0),
+('BT80d30619', 'SVe4be66dd', 'DTf8f8c59c', '2025-04-20 17:46:38', 'hoanthanh', 2.5),
+('BTb0a22505', 'HS004', 'DT17445626', '2025-04-14 21:03:09', 'hoanthanh', 5),
+('BTb5083dd3', 'SVe4be66dd', 'DT17445626', '2025-04-20 17:45:55', 'hoanthanh', 0),
+('BTca2e5b4a', 'SVe4be66dd', 'DT17445626', '2025-04-20 17:47:47', 'hoanthanh', 10),
+('BTd3855d09', 'HS004', 'DT42d54769', '2025-04-20 19:17:47', 'hoanthanh', 0),
+('BTd7cb037f', 'SVe4be66dd', 'DT42d54769', '2025-04-20 18:07:55', 'hoanthanh', 0),
+('BTe2edb685', 'HS004', 'DT17445626', '2025-04-14 21:20:43', 'hoanthanh', 10);
 
 -- --------------------------------------------------------
 
@@ -44,11 +89,14 @@ INSERT INTO `baithi` (`id_baithi`, `id_hocsinh`, `id_dethi`, `ngaylam`, `trangth
 -- Table structure for table `cauhoi`
 --
 
-CREATE TABLE `cauhoi` (
+DROP TABLE IF EXISTS `cauhoi`;
+CREATE TABLE IF NOT EXISTS `cauhoi` (
   `id_cauhoi` varchar(10) NOT NULL,
   `noidungcauhoi` varchar(100) NOT NULL,
   `dapan` varchar(100) NOT NULL,
-  `id_monhoc` varchar(10) NOT NULL
+  `id_monhoc` varchar(10) NOT NULL,
+  PRIMARY KEY (`id_cauhoi`),
+  KEY `id_monhoc` (`id_monhoc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -56,9 +104,89 @@ CREATE TABLE `cauhoi` (
 --
 
 INSERT INTO `cauhoi` (`id_cauhoi`, `noidungcauhoi`, `dapan`, `id_monhoc`) VALUES
-('CH001', '2 + 2 = ?', '4', 'MH001'),
-('CH002', 'Th? ?ô c?a Vi?t Nam là gì?', 'Hà N?i', 'MH002'),
-('CH003', 'What is the capital of France?', 'Paris', 'MH003');
+('CH03532a74', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CH07df2c28', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH07f1106c', '3', '3', 'MH001'),
+('CH08c70ac4', 'What is 2 + 2?', '4', 'MH001'),
+('CH0fa86210', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CH10a066e0', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH117368ec', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH15ea932e', 'What is 2 + 2?', '4', 'MH001'),
+('CH18f092dd', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH19f6667d', '1=3', '5', 'MH001'),
+('CH1a979158', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH1bd78cae', 'eee', 'e', 'MH001'),
+('CH1e3fc99b', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH28297b19', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CH295814a5', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH2d11e59a', 'eeeee', 'e', 'MH001'),
+('CH2ec03fdf', 'e', 'e', 'MH001'),
+('CH2fcfd8b8', 'test', '1', 'MH001'),
+('CH307e1554', 'What is 2 + 2?', '4', 'MH001'),
+('CH3258b08d', 'What is 2 + 2?', '4', 'MH001'),
+('CH356a4403', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH406b1055', '1', '1', 'MH001'),
+('CH42a0d5f1', 'What is 2 + 2?', '4', 'MH001'),
+('CH433ae598', '3', '3', 'MH001'),
+('CH4454c61c', 'What is 2 + 2?', '4', 'MH001'),
+('CH4499d3a0', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH466c107a', 's', 's', 'MH001'),
+('CH4c9e5d63', 'What is 2 + 2?', '4', 'MH001'),
+('CH4dd33d46', 'What is 2 + 2?', '4', 'MH001'),
+('CH51360f22', 'What is 2 + 2?', '4', 'MH001'),
+('CH556edff7', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH5a9f0605', 'Test', '3', 'MH001'),
+('CH5e1e8800', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH5f582227', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CH602d16e4', 'f', 'f', 'MH001'),
+('CH62697a50', 'What is the capital of France?', 'Paris', 'MH003'),
+('CH69a357cd', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH6b7baa11', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CH6c557d8a', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH6cb81c9c', 'f', 'f', 'MH001'),
+('CH708bc021', '1111111', '11', 'MH001'),
+('CH717c85f4', '1', '1', 'MH001'),
+('CH76300b4c', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH7dfc5f70', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH841fb741', 'What is 2 + 2?', '4', 'MH003'),
+('CH8a69733d', 'What is 2 + 2?', '4', 'MH001'),
+('CH8e05feb3', 'What is 2 + 2?', '4', 'MH001'),
+('CH92148407', 'What is the capital of France?', 'Paris', 'MH001'),
+('CH935f6cd6', 'What is 2 + 2?', '4', 'MH001'),
+('CH961af3a6', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CH9a2ffe7e', 'tét', '2', 'MH001'),
+('CH9fcc9b34', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHa28b4576', 'What is 2 + 2?', '4', 'MH001'),
+('CHa6690d44', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHa7d0a2fa', 'What is 2 + 2?', '4', 'MH001'),
+('CHa8aafeca', '1+2', '3', 'MH001'),
+('CHaadaab6d', '11', '1', 'MH001'),
+('CHab35863d', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHace90ae5', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CHb2ec7945', 'f', 'f', 'MH001'),
+('CHb65456d2', 'e', 'e', 'MH001'),
+('CHb90819c2', 's', 's', 'MH001'),
+('CHb9d60e63', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHbbb69f74', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHc1fdfae7', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHc5a5dc4e', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHc7afa271', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHcef3a169', 'e', 'e', 'MH001'),
+('CHcf606a38', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHd0bd49e1', 'f', 'f', 'MH001'),
+('CHd5d30b3b', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHe111b192', 'What is the capital of VietNam?', 'Hanoi', 'MH001'),
+('CHe35ddf34', 'What is 2 + 2 + 2?', '6', 'MH001'),
+('CHe6e204b7', 's', 's', 'MH001'),
+('CHe72c5f64', '1', '1', 'MH001'),
+('CHe8d13bcb', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHeb041c89', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHebeb3a43', '3', '3', 'MH001'),
+('CHed79533e', 'What is the capital of France?', 'Paris', 'MH001'),
+('CHf0fc8353', 'What is 2 + 2?', '4', 'MH001'),
+('CHf59cf86d', 's', 's', 'MH001'),
+('CHf6f94740', 'What is 2 + 2?', '4', 'MH001'),
+('CHfe8c3712', '3', '3', 'MH001');
 
 -- --------------------------------------------------------
 
@@ -66,10 +194,13 @@ INSERT INTO `cauhoi` (`id_cauhoi`, `noidungcauhoi`, `dapan`, `id_monhoc`) VALUES
 -- Table structure for table `cautraloi`
 --
 
-CREATE TABLE `cautraloi` (
+DROP TABLE IF EXISTS `cautraloi`;
+CREATE TABLE IF NOT EXISTS `cautraloi` (
   `id_cautraloi` varchar(10) NOT NULL,
   `id_cauhoi` varchar(10) NOT NULL,
-  `noidungcautraloi` varchar(100) NOT NULL
+  `noidungcautraloi` varchar(100) NOT NULL,
+  PRIMARY KEY (`id_cautraloi`),
+  KEY `id_cauhoi` (`id_cauhoi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -77,9 +208,333 @@ CREATE TABLE `cautraloi` (
 --
 
 INSERT INTO `cautraloi` (`id_cautraloi`, `id_cauhoi`, `noidungcautraloi`) VALUES
-('CTL001', 'CH001', '3'),
-('CTL002', 'CH001', '4'),
-('CTL003', 'CH001', '5');
+('TL011ecab4', 'CH406b1055', '1'),
+('TL0179b04b', 'CHa7d0a2fa', '4'),
+('TL01b57dd8', 'CHa7d0a2fa', '3'),
+('TL01fe4a25', 'CHe35ddf34', '5'),
+('TL0225ac56', 'CH466c107a', 's'),
+('TL0288a75c', 'CH2ec03fdf', 'e'),
+('TL02ecb5d9', 'CH5f582227', '4'),
+('TL03de8f45', 'CHed79533e', 'Hanoi'),
+('TL0477f417', 'CH07df2c28', 'Florida'),
+('TL059ba2fd', 'CH3258b08d', '5'),
+('TL067063bd', 'CH5a9f0605', '2'),
+('TL073021e4', 'CH28297b19', '6'),
+('TL08852bba', 'CH08c70ac4', '33333'),
+('TL09799eac', 'CHfe8c3712', '3'),
+('TL09e7b884', 'CH6c557d8a', 'Florida'),
+('TL0adeaa3e', 'CH5a9f0605', '3'),
+('TL0b33de64', 'CH07f1106c', '3'),
+('TL0d672c19', 'CH51360f22', '3'),
+('TL0e174b89', 'CH15ea932e', '3'),
+('TL0f7039e9', 'CH18f092dd', 'London'),
+('TL0fb301d4', 'CH717c85f4', '1'),
+('TL0fdb1789', 'CH28297b19', '3'),
+('TL1035542f', 'CH3258b08d', '6'),
+('TL10f09e3f', 'CHa28b4576', '6'),
+('TL1284d568', 'CH602d16e4', 'f'),
+('TL12a5ea85', 'CH556edff7', 'Paris'),
+('TL12cdbe2c', 'CHaadaab6d', '1'),
+('TL130a79f2', 'CHf0fc8353', '6'),
+('TL13ae1331', 'CH602d16e4', 'f'),
+('TL14619771', 'CH307e1554', '5'),
+('TL14b74295', 'CH1e3fc99b', 'Florida'),
+('TL155ff5dc', 'CHcef3a169', 'e'),
+('TL165692f4', 'CH9a2ffe7e', '3'),
+('TL17a89612', 'CH6b7baa11', '5'),
+('TL1893f068', 'CH2ec03fdf', 'e'),
+('TL18c5f105', 'CH961af3a6', 'London'),
+('TL1a1d212c', 'CH8e05feb3', '6'),
+('TL1bda3f93', 'CH1bd78cae', 'e'),
+('TL1beba516', 'CH10a066e0', 'London'),
+('TL1c686984', 'CH07f1106c', '3'),
+('TL1c71ba3e', 'CH556edff7', 'London'),
+('TL1d3ca702', 'CH117368ec', 'Florida'),
+('TL1d4526be', 'CH69a357cd', 'Hanoi'),
+('TL1dd5d8a5', 'CHa28b4576', '3'),
+('TL1ed01b00', 'CHace90ae5', 'Paris'),
+('TL1f2e461a', 'CHe111b192', 'London'),
+('TL1f85ea17', 'CH18f092dd', 'Hanoi'),
+('TL1fc55cc9', 'CH03532a74', '6'),
+('TL20d5e87a', 'CH307e1554', '4'),
+('TL23dc8193', 'CHa7d0a2fa', '5'),
+('TL240783ba', 'CH18f092dd', 'Florida'),
+('TL24396e84', 'CH295814a5', 'Hanoi'),
+('TL25138e3e', 'CH0fa86210', '6'),
+('TL2542b082', 'CHa6690d44', '5'),
+('TL25c28496', 'CH2d11e59a', 'ee'),
+('TL261bf0fe', 'CHf6f94740', '5'),
+('TL27380b45', 'CHcf606a38', '6'),
+('TL2754110e', 'CHab35863d', '5'),
+('TL27999e0a', 'CH9fcc9b34', 'London'),
+('TL28084b09', 'CH4dd33d46', '4'),
+('TL29532a43', 'CH4dd33d46', '5'),
+('TL29fb87db', 'CH4dd33d46', '3'),
+('TL2a158e54', 'CH4c9e5d63', '6'),
+('TL2a868053', 'CH19f6667d', '4'),
+('TL2c66d411', 'CH356a4403', 'Hanoi'),
+('TL2ddefb49', 'CH62697a50', 'London'),
+('TL2e15fe37', 'CH9a2ffe7e', '1'),
+('TL306ce4e1', 'CHb65456d2', 'e'),
+('TL3208e45b', 'CH406b1055', '1'),
+('TL320ea422', 'CHf59cf86d', 's'),
+('TL322e71d8', 'CHe72c5f64', '1'),
+('TL325374cf', 'CH0fa86210', '5'),
+('TL33a08fd6', 'CH0fa86210', '3'),
+('TL34bc3062', 'CHbbb69f74', 'Paris'),
+('TL366c2a6e', 'CH42a0d5f1', '6'),
+('TL39109c72', 'CH6cb81c9c', 'f'),
+('TL3b414773', 'CH935f6cd6', '6'),
+('TL3b467468', 'CHebeb3a43', '3'),
+('TL3d13fcf5', 'CHed79533e', 'Florida'),
+('TL3dd66afe', 'CH69a357cd', 'Paris'),
+('TL3eb5fbd1', 'CH07f1106c', '3'),
+('TL3f1cb3ec', 'CH51360f22', '4'),
+('TL3f74f1fa', 'CHcef3a169', 'e'),
+('TL41871b92', 'CH1a979158', 'ttttt'),
+('TL419ee455', 'CHb9d60e63', 'Paris'),
+('TL436fee49', 'CH961af3a6', 'Paris'),
+('TL44aac12f', 'CHe72c5f64', '1'),
+('TL44f1292f', 'CH3258b08d', '3'),
+('TL455e0250', 'CH2d11e59a', 'eee'),
+('TL45d0db14', 'CHb90819c2', 's'),
+('TL464cbacf', 'CHb65456d2', 'e'),
+('TL4707030b', 'CH92148407', 'London'),
+('TL47c9c3ee', 'CH2fcfd8b8', '1'),
+('TL4c51ae36', 'CHa8aafeca', '1'),
+('TL4cbd4d3c', 'CH602d16e4', 'f'),
+('TL4e71a503', 'CH08c70ac4', '4'),
+('TL4e7cb09c', 'CH717c85f4', '1'),
+('TL5172befa', 'CH406b1055', '1'),
+('TL52f99a9e', 'CH2ec03fdf', 'e'),
+('TL53259f97', 'CH28297b19', '5'),
+('TL54ec8980', 'CHbbb69f74', 'London'),
+('TL54f7bb25', 'CHa7d0a2fa', '6'),
+('TL557c777f', 'CHc5a5dc4e', '6'),
+('TL5650caf8', 'CHf0fc8353', '4'),
+('TL565ac144', 'CH4454c61c', '4'),
+('TL5677b29f', 'CH3258b08d', '4'),
+('TL567b1c1a', 'CHc5a5dc4e', '4'),
+('TL56ff941e', 'CHe6e204b7', 's'),
+('TL575c9568', 'CH117368ec', 'Hanoi'),
+('TL58859ec7', 'CH42a0d5f1', '5'),
+('TL597b8a75', 'CH7dfc5f70', 'Paris'),
+('TL5af4b0d6', 'CH6b7baa11', '6'),
+('TL5c0f9d53', 'CH51360f22', '5'),
+('TL5c6444e9', 'CHf0fc8353', '3'),
+('TL5d929fc3', 'CH03532a74', '4'),
+('TL5e84436c', 'CHb65456d2', 'e'),
+('TL5ea6095a', 'CH841fb741', '5'),
+('TL61f1e566', 'CH42a0d5f1', '3'),
+('TL61f4260f', 'CHe8d13bcb', 'Paris'),
+('TL62cbd2b3', 'CHcef3a169', 'e'),
+('TL639522f9', 'CH07f1106c', '3'),
+('TL63ff2155', 'CH9fcc9b34', 'Florida'),
+('TL640a7d8d', 'CHe6e204b7', 's'),
+('TL64240b68', 'CH5f582227', '3'),
+('TL666680c9', 'CH1bd78cae', 'e'),
+('TL67145cd1', 'CHb2ec7945', 'f'),
+('TL67a094db', 'CH295814a5', 'London'),
+('TL6846566b', 'CH4499d3a0', 'Florida'),
+('TL687600d0', 'CHf59cf86d', 'ss'),
+('TL6a8dd36e', 'CHe35ddf34', '6'),
+('TL6aeaa8cb', 'CHaadaab6d', '1'),
+('TL6b7b6d91', 'CHa28b4576', '5'),
+('TL6bd77302', 'CH7dfc5f70', 'London'),
+('TL6cffe00c', 'CH8e05feb3', '3'),
+('TL6d528a2f', 'CH556edff7', 'Florida'),
+('TL6d83c3ac', 'CHc5a5dc4e', '5'),
+('TL6d9137b8', 'CHf59cf86d', 's'),
+('TL6e85d5ad', 'CH69a357cd', 'London'),
+('TL6fc8dc2d', 'CH1bd78cae', 'e'),
+('TL706d98e8', 'CHb2ec7945', 'f'),
+('TL70b4b6c5', 'CH62697a50', 'Florida'),
+('TL713be323', 'CH8a69733d', '5'),
+('TL716824ad', 'CH07df2c28', 'London'),
+('TL71acbf27', 'CH433ae598', '3'),
+('TL725c33a4', 'CH7dfc5f70', 'Florida'),
+('TL735de3ae', 'CH1a979158', 'Paris'),
+('TL73be904d', 'CHd5d30b3b', '6'),
+('TL742faed7', 'CH62697a50', 'Paris'),
+('TL74d57cc3', 'CHe111b192', 'Florida'),
+('TL7602e8a7', 'CHe72c5f64', '1'),
+('TL7611fb6f', 'CH6cb81c9c', 'f'),
+('TL76fe7bb4', 'CHace90ae5', 'Hanoi'),
+('TL77fc199d', 'CHc7afa271', 'London'),
+('TL78cb0bf7', 'CH6b7baa11', '4'),
+('TL7b06b842', 'CH708bc021', '111111'),
+('TL7c18c0f1', 'CH708bc021', '11111'),
+('TL7d2ea0fa', 'CH28297b19', '4'),
+('TL7d3029aa', 'CH2fcfd8b8', '1'),
+('TL801fd4e3', 'CH08c70ac4', '5555'),
+('TL80ca2b02', 'CH4499d3a0', 'Hanoi'),
+('TL8493331e', 'CHab35863d', '6'),
+('TL85843f15', 'CHc7afa271', 'Hanoi'),
+('TL85920892', 'CHa8aafeca', '3'),
+('TL85aafeac', 'CHeb041c89', 'Paris'),
+('TL86c78779', 'CHa28b4576', '4'),
+('TL87a3c0b7', 'CHe72c5f64', '1'),
+('TL887a1f15', 'CHe35ddf34', '4'),
+('TL8922789b', 'CHa6690d44', '3'),
+('TL8928538e', 'CH5e1e8800', 'Paris'),
+('TL89793713', 'CH8a69733d', '3'),
+('TL8a8a2edd', 'CH07df2c28', 'Paris'),
+('TL8ad7863f', 'CH4dd33d46', '6'),
+('TL8ad94a22', 'CH935f6cd6', '5'),
+('TL8ba83187', 'CHd0bd49e1', 'f'),
+('TL8c22cf4f', 'CHe8d13bcb', 'London'),
+('TL8ce97ac8', 'CH295814a5', 'Paris'),
+('TL8d7833a0', 'CH42a0d5f1', '4'),
+('TL8e394bc6', 'CH117368ec', 'London'),
+('TL8f7ccd5e', 'CH4c9e5d63', '4'),
+('TL8f817034', 'CH1a979158', 'Florida'),
+('TL8ff654b0', 'CH4454c61c', '6'),
+('TL913dbf7c', 'CHc1fdfae7', 'Paris'),
+('TL919fa996', 'CH9fcc9b34', 'Paris'),
+('TL91d31bc3', 'CH5e1e8800', 'Hanoi'),
+('TL925e15e7', 'CH717c85f4', '1'),
+('TL92d80d05', 'CHebeb3a43', '3'),
+('TL9463d74e', 'CHed79533e', 'Paris'),
+('TL94ae6a41', 'CHb9d60e63', 'Florida'),
+('TL94ded8ba', 'CHa6690d44', '6'),
+('TL958fcd4e', 'CHcf606a38', '3'),
+('TL962e588f', 'CHc7afa271', 'Paris'),
+('TL96e515aa', 'CH708bc021', '11'),
+('TL973dda1b', 'CHace90ae5', 'Florida'),
+('TL974c9127', 'CH295814a5', 'Florida'),
+('TL9914cf26', 'CHc5a5dc4e', '3'),
+('TL997befde', 'CH841fb741', '3'),
+('TL99ad0caa', 'CH1bd78cae', 'e'),
+('TL9a3703f4', 'CHb2ec7945', 'f'),
+('TL9a558118', 'CH76300b4c', 'Paris'),
+('TL9a80abbc', 'CH356a4403', 'Paris'),
+('TL9cb6cae3', 'CH5f582227', '6'),
+('TL9cf59aee', 'CHed79533e', 'London'),
+('TL9d6958d1', 'CHab35863d', '4'),
+('TL9d8555c1', 'CH708bc021', '11111'),
+('TL9de4d442', 'CHab35863d', '3'),
+('TL9df6b421', 'CH76300b4c', 'London'),
+('TL9e80ea71', 'CHd5d30b3b', '5'),
+('TL9e972b4c', 'CHf0fc8353', '5'),
+('TL9f7827de', 'CH466c107a', 's'),
+('TLa0842437', 'CH4499d3a0', 'London'),
+('TLa1441fcf', 'CH4454c61c', '5'),
+('TLa247a1cf', 'CH15ea932e', '6'),
+('TLa2c724aa', 'CH6c557d8a', 'Paris'),
+('TLa3cdef2f', 'CH5f582227', '5'),
+('TLa441be73', 'CH08c70ac4', '6'),
+('TLa4867295', 'CHebeb3a43', '3'),
+('TLa5672e46', 'CHf6f94740', '6'),
+('TLa5853de5', 'CHeb041c89', 'London'),
+('TLa687dad3', 'CH69a357cd', 'Florida'),
+('TLa75723ff', 'CH9a2ffe7e', '4'),
+('TLa7889e1b', 'CH356a4403', 'London'),
+('TLa8354943', 'CH8a69733d', '6'),
+('TLa93eb5d7', 'CHeb041c89', 'Florida'),
+('TLa9d82dd7', 'CH9fcc9b34', 'Hanoi'),
+('TLa9f9d641', 'CH935f6cd6', '4'),
+('TLab358701', 'CH6c557d8a', 'London'),
+('TLabbd2f2e', 'CH15ea932e', '5'),
+('TLad0e61b6', 'CHe111b192', 'Hanoi'),
+('TLad897984', 'CH466c107a', 's'),
+('TLadac524b', 'CHb90819c2', 's'),
+('TLae4c807e', 'CH19f6667d', '2'),
+('TLaf5f6c5e', 'CH1e3fc99b', 'Hanoi'),
+('TLb0b9e03f', 'CHa6690d44', '4'),
+('TLb20ffb9a', 'CH03532a74', '3'),
+('TLb2aa50da', 'CHaadaab6d', '1'),
+('TLb38d6736', 'CH8a69733d', '4'),
+('TLb39df6e0', 'CHd0bd49e1', 'f'),
+('TLb5af7fcb', 'CH602d16e4', 'f'),
+('TLb6548a84', 'CHd0bd49e1', 'f'),
+('TLb6a4570d', 'CH92148407', 'Florida'),
+('TLb6b7ae1f', 'CHcef3a169', 'e'),
+('TLb7d2332d', 'CH2fcfd8b8', '1'),
+('TLb92689fe', 'CH1e3fc99b', 'London'),
+('TLb932513e', 'CH556edff7', 'Hanoi'),
+('TLb976268c', 'CH76300b4c', 'Florida'),
+('TLb97faff2', 'CH92148407', 'Hanoi'),
+('TLb99d0f7a', 'CHc7afa271', 'Florida'),
+('TLba71a7d4', 'CH9a2ffe7e', '2'),
+('TLbf5d6739', 'CH1e3fc99b', 'Paris'),
+('TLc22c2417', 'CH406b1055', '1'),
+('TLc2a2fc90', 'CHeb041c89', 'Hanoi'),
+('TLc2c6d193', 'CH5a9f0605', '1'),
+('TLc2e37da4', 'CH4499d3a0', 'Paris'),
+('TLc3236221', 'CH961af3a6', 'Hanoi'),
+('TLc5f15526', 'CH961af3a6', 'Florida'),
+('TLc7e75ce8', 'CH8e05feb3', '5'),
+('TLc94afbea', 'CH5a9f0605', '2'),
+('TLc9c4f3c3', 'CH935f6cd6', '3'),
+('TLcb2aece8', 'CH10a066e0', 'Paris'),
+('TLcb7290ad', 'CHe35ddf34', '3'),
+('TLcb951fe9', 'CHaadaab6d', '1'),
+('TLcf84d956', 'CH62697a50', 'Hanoi'),
+('TLd5004987', 'CH4454c61c', '3'),
+('TLd69821ba', 'CHf6f94740', '4'),
+('TLd7559ae5', 'CH1a979158', 'London'),
+('TLd84d9d15', 'CHe111b192', 'Paris'),
+('TLd8fdf5e9', 'CH51360f22', '6'),
+('TLd91730f8', 'CH15ea932e', '4'),
+('TLd9658424', 'CH2d11e59a', 'e'),
+('TLd9d8725b', 'CH433ae598', '3'),
+('TLda2893f2', 'CH07df2c28', 'Hanoi'),
+('TLdbe61f9b', 'CH307e1554', '3'),
+('TLdcb69ab5', 'CHd5d30b3b', '3'),
+('TLdd73a99b', 'CH5e1e8800', 'London'),
+('TLdf2dd6e7', 'CHb9d60e63', 'Hanoi'),
+('TLe05bb01a', 'CH10a066e0', 'Hanoi'),
+('TLe0f756e8', 'CHd0bd49e1', 'f'),
+('TLe1cf50a2', 'CH4c9e5d63', '3'),
+('TLe207b15d', 'CH92148407', 'Paris'),
+('TLe2f1dfec', 'CH466c107a', 's'),
+('TLe4456b98', 'CHbbb69f74', 'Florida'),
+('TLe455d093', 'CH2ec03fdf', 'e'),
+('TLe4ca8a10', 'CH19f6667d', '5'),
+('TLe608c831', 'CH356a4403', 'Florida'),
+('TLe647f57d', 'CH433ae598', '3'),
+('TLe70fdeae', 'CH433ae598', '3'),
+('TLe77351e7', 'CH10a066e0', 'Florida'),
+('TLe8673dce', 'CH117368ec', 'Paris'),
+('TLe934856e', 'CH0fa86210', '4'),
+('TLe9dc86f4', 'CHc1fdfae7', 'London'),
+('TLe9f24694', 'CHc1fdfae7', 'Florida'),
+('TLea69d6c3', 'CH4c9e5d63', '5'),
+('TLea93aa1c', 'CHcf606a38', '5'),
+('TLeb839692', 'CH19f6667d', '6'),
+('TLec45d647', 'CH841fb741', '4'),
+('TLece43182', 'CHbbb69f74', 'Hanoi'),
+('TLed01be53', 'CHe8d13bcb', 'Hanoi'),
+('TLeebb27c8', 'CHfe8c3712', '3'),
+('TLef3e0de7', 'CHa8aafeca', '2'),
+('TLef5c9298', 'CH307e1554', '6'),
+('TLf07e0c5a', 'CH7dfc5f70', 'Hanoi'),
+('TLf122d10b', 'CHcf606a38', '4'),
+('TLf17fadfd', 'CHe8d13bcb', 'Florida'),
+('TLf1fa418f', 'CHfe8c3712', '3'),
+('TLf2b4f9cb', 'CH8e05feb3', '4'),
+('TLf2ba7534', 'CH03532a74', '5'),
+('TLf31731a4', 'CHb65456d2', 'e'),
+('TLf344be3c', 'CH5e1e8800', 'Florida'),
+('TLf3ba54bb', 'CHd5d30b3b', '4'),
+('TLf46a943e', 'CHfe8c3712', '3'),
+('TLf4a7be81', 'CH6c557d8a', 'Hanoi'),
+('TLf4de957b', 'CHebeb3a43', '3'),
+('TLf5125c47', 'CHa8aafeca', '6'),
+('TLf58545e3', 'CH6b7baa11', '3'),
+('TLf6f1f4c3', 'CH6cb81c9c', 'f'),
+('TLf782915f', 'CH6cb81c9c', 'f'),
+('TLf83d3b04', 'CH2d11e59a', 'eee'),
+('TLf8ecff21', 'CH717c85f4', '1'),
+('TLf9873880', 'CH76300b4c', 'Hanoi'),
+('TLf9e400d9', 'CHace90ae5', 'London'),
+('TLfad731cb', 'CH18f092dd', 'Paris'),
+('TLfbba8503', 'CHb2ec7945', 'f'),
+('TLfd9b20e9', 'CHf6f94740', '3'),
+('TLfe52649a', 'CH841fb741', '6'),
+('TLfee1c6b8', 'CHc1fdfae7', 'Hanoi'),
+('TLffa8f972', 'CHb9d60e63', 'London'),
+('TLffc2aefc', 'CH2fcfd8b8', '1');
 
 -- --------------------------------------------------------
 
@@ -87,26 +542,35 @@ INSERT INTO `cautraloi` (`id_cautraloi`, `id_cauhoi`, `noidungcautraloi`) VALUES
 -- Table structure for table `dethi`
 --
 
-CREATE TABLE `dethi` (
+DROP TABLE IF EXISTS `dethi`;
+CREATE TABLE IF NOT EXISTS `dethi` (
   `id_dethi` varchar(10) NOT NULL,
   `id_giaovien` varchar(10) NOT NULL,
   `id_monhoc` varchar(10) NOT NULL,
   `tendethi` varchar(255) DEFAULT NULL,
   `ngay_tao` datetime NOT NULL,
-  `thoigianthi` int(11) NOT NULL,
+  `thoigianthi` int NOT NULL,
   `trangthai` varchar(10) DEFAULT NULL,
   `thoigianbatdau` datetime NOT NULL,
-  `thoigianketthuc` datetime NOT NULL
+  `thoigianketthuc` datetime NOT NULL,
+  `is_restricted` tinyint DEFAULT '0',
+  PRIMARY KEY (`id_dethi`),
+  KEY `id_giaovien` (`id_giaovien`),
+  KEY `id_monhoc` (`id_monhoc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `dethi`
 --
 
-INSERT INTO `dethi` (`id_dethi`, `id_giaovien`, `id_monhoc`, `tendethi`, `ngay_tao`, `thoigianthi`, `trangthai`, `thoigianbatdau`, `thoigianketthuc`) VALUES
-('DT001', 'GV001', 'MH001', 'tet', '2025-03-01 10:00:00', 2025, 'dethi', '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
-('DT002', 'GV002', 'MH002', 'téttt', '2025-03-02 11:00:00', 20, 'onthi', '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
-('DT003', 'GV003', 'MH003', 'toan', '2025-03-03 12:00:00', 2025, 'dethi', '0000-00-00 00:00:00', '0000-00-00 00:00:00');
+INSERT INTO `dethi` (`id_dethi`, `id_giaovien`, `id_monhoc`, `tendethi`, `ngay_tao`, `thoigianthi`, `trangthai`, `thoigianbatdau`, `thoigianketthuc`, `is_restricted`) VALUES
+('DT0932fa0c', 'GV002', 'MH001', 'test not restriction', '2025-04-20 21:50:08', 30, 'dethi', '2025-04-20 21:50:00', '2025-04-20 22:20:00', 0),
+('DT17445609', 'GV002', 'MH001', 'test2', '2025-04-13 00:00:00', 10, 'dethi', '2025-04-24 07:18:00', '2025-04-24 07:28:00', 0),
+('DT17445626', 'GV002', 'MH001', '1234567', '2025-04-13 00:00:00', 10, 'dethi', '2025-04-14 03:19:00', '2025-04-30 20:36:00', 0),
+('DT42d54769', 'GV002', 'MH001', 'test restriction', '2025-04-20 20:41:42', 30, 'dethi', '2025-04-17 20:41:00', '2025-04-28 21:11:00', 1),
+('DT4f5a01ea', 'GV002', 'MH001', 'anh', '2025-04-15 03:40:17', 10, 'dethi', '2025-04-15 03:40:00', '2025-04-15 03:50:00', 0),
+('DTccd664f1', 'GV002', 'MH001', 'test on', '2025-04-20 23:38:36', 10, 'dethi', '2025-04-20 23:38:00', '2025-04-20 23:48:00', 0),
+('DTf8f8c59c', 'GV002', 'MH001', 'test on 2', '2025-04-20 23:39:01', 10, 'onthi', '2025-04-20 23:38:00', '2025-04-21 23:48:00', 0);
 
 -- --------------------------------------------------------
 
@@ -114,9 +578,12 @@ INSERT INTO `dethi` (`id_dethi`, `id_giaovien`, `id_monhoc`, `tendethi`, `ngay_t
 -- Table structure for table `dethi_cauhoi`
 --
 
-CREATE TABLE `dethi_cauhoi` (
+DROP TABLE IF EXISTS `dethi_cauhoi`;
+CREATE TABLE IF NOT EXISTS `dethi_cauhoi` (
   `id_dethi` varchar(10) NOT NULL,
-  `id_cauhoi` varchar(10) NOT NULL
+  `id_cauhoi` varchar(10) NOT NULL,
+  PRIMARY KEY (`id_dethi`,`id_cauhoi`),
+  KEY `id_cauhoi` (`id_cauhoi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -124,9 +591,46 @@ CREATE TABLE `dethi_cauhoi` (
 --
 
 INSERT INTO `dethi_cauhoi` (`id_dethi`, `id_cauhoi`) VALUES
-('DT001', 'CH001'),
-('DT002', 'CH002'),
-('DT003', 'CH003');
+('DT0932fa0c', 'CH03532a74'),
+('DTccd664f1', 'CH0fa86210'),
+('DT42d54769', 'CH18f092dd'),
+('DT0932fa0c', 'CH1e3fc99b'),
+('DTccd664f1', 'CH307e1554'),
+('DT17445626', 'CH4454c61c'),
+('DTf8f8c59c', 'CH4499d3a0'),
+('DT0932fa0c', 'CH556edff7'),
+('DT42d54769', 'CH6c557d8a'),
+('DTf8f8c59c', 'CH76300b4c'),
+('DTf8f8c59c', 'CH8a69733d'),
+('DTccd664f1', 'CH9fcc9b34'),
+('DT42d54769', 'CHa28b4576'),
+('DT42d54769', 'CHcf606a38'),
+('DTf8f8c59c', 'CHd5d30b3b'),
+('DTccd664f1', 'CHe111b192'),
+('DT17445626', 'CHeb041c89'),
+('DT0932fa0c', 'CHf6f94740');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dethi_hocsinh`
+--
+
+DROP TABLE IF EXISTS `dethi_hocsinh`;
+CREATE TABLE IF NOT EXISTS `dethi_hocsinh` (
+  `id_dethi` varchar(10) NOT NULL,
+  `id_hocsinh` varchar(10) NOT NULL,
+  PRIMARY KEY (`id_dethi`,`id_hocsinh`),
+  KEY `id_hocsinh` (`id_hocsinh`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `dethi_hocsinh`
+--
+
+INSERT INTO `dethi_hocsinh` (`id_dethi`, `id_hocsinh`) VALUES
+('DT42d54769', 'HS001'),
+('DT42d54769', 'HS004');
 
 -- --------------------------------------------------------
 
@@ -134,7 +638,8 @@ INSERT INTO `dethi_cauhoi` (`id_dethi`, `id_cauhoi`) VALUES
 -- Table structure for table `giaovien`
 --
 
-CREATE TABLE `giaovien` (
+DROP TABLE IF EXISTS `giaovien`;
+CREATE TABLE IF NOT EXISTS `giaovien` (
   `id_giaovien` varchar(10) NOT NULL,
   `ten_giaovien` varchar(30) NOT NULL,
   `tendangnhap_gv` varchar(20) NOT NULL,
@@ -142,7 +647,9 @@ CREATE TABLE `giaovien` (
   `email_gv` varchar(30) NOT NULL,
   `phone_gv` varchar(15) NOT NULL,
   `monchinh` varchar(10) DEFAULT NULL,
-  `lopdaychinh` varchar(10) NOT NULL
+  `lopdaychinh` varchar(10) NOT NULL,
+  PRIMARY KEY (`id_giaovien`),
+  KEY `monchinh` (`monchinh`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -150,12 +657,9 @@ CREATE TABLE `giaovien` (
 --
 
 INSERT INTO `giaovien` (`id_giaovien`, `ten_giaovien`, `tendangnhap_gv`, `matkhau_gv`, `email_gv`, `phone_gv`, `monchinh`, `lopdaychinh`) VALUES
-('GV001', 'Nguyen Van Gd', 'gvG', 'gv1234', 'nguyengddddddd@example.com', '0123456789', 'MH001', 'Lop10A'),
-('GV002', 'Tran Tien Hung', 'gvH', 'gv5678', 'tranhdd@example.com', '0987654321', 'MH002', 'Lop11B'),
-('GV003', 'Le Van I', 'gvI', 'gv91011', 'lev@example.com', '0112233445', 'MH003', 'Lop12C'),
-('gv1', 'Nguyen Van A', 'gv123', '$2b$10$bRiyiD2Sm', 'gv@example.com', '0123456789', 'MH001', '10A'),
-('gv12', 'Nguyen Van A', 'gv1234', '$2b$10$/oQaQy.9AJrNIvvFk8hY9.L0P3dYbBZSqChRWkqLRe9aq6AhFVPKK', 'gv@example.com', '0123456789', 'MH001', '10A'),
-('gv3', 'Nguyen Van C', 'gv789', '$2b$10$lKuVDGU3E', 'gv3@example.com', '0123456789', 'MH001', '12A');
+('GV001', 'Tran Thi B', 'teacher1', '$2b$10$siEP7iS4Ciz8px0TgR18p.t3yQMoCUp.AVjLwLgyyrRCtc/ln8GC.', 'teacher1@example.com', '0987654321', 'MH001', '10A'),
+('GV002', 'Tran Thi S', 'giaovien2', '$2b$10$GXAfNgtr4faOxzzSVHUjPeVMTkCQputdoFR0uXhOpA9bm2ILRPkxa', 'giaovien2@example.com', '0981234567', 'MH002', '11A1'),
+('GVb5f09a5c', 'Tran Thi B', 'thib456', '$2b$10$1dM51/NzaSIkh6wuU2wQXu0iBFmdWtYcQVTCpv1xSAumcjCkUfAjC', 'thib@example.com', '0987654321', 'MH001', '10A');
 
 -- --------------------------------------------------------
 
@@ -163,13 +667,15 @@ INSERT INTO `giaovien` (`id_giaovien`, `ten_giaovien`, `tendangnhap_gv`, `matkha
 -- Table structure for table `hocsinh`
 --
 
-CREATE TABLE `hocsinh` (
+DROP TABLE IF EXISTS `hocsinh`;
+CREATE TABLE IF NOT EXISTS `hocsinh` (
   `id_hocsinh` varchar(10) NOT NULL,
   `ten_hocsinh` varchar(50) NOT NULL,
   `tendangnhap` varchar(20) NOT NULL,
   `matkhau` varchar(255) NOT NULL,
   `email` varchar(30) NOT NULL,
-  `phone` varchar(15) NOT NULL
+  `phone` varchar(15) NOT NULL,
+  PRIMARY KEY (`id_hocsinh`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -177,11 +683,9 @@ CREATE TABLE `hocsinh` (
 --
 
 INSERT INTO `hocsinh` (`id_hocsinh`, `ten_hocsinh`, `tendangnhap`, `matkhau`, `email`, `phone`) VALUES
-('HS001', 'Nguyen Van D', 'hsD', 'hs1234', 'nguyend@example.com', '0123456789'),
-('HS001222', 'Nguyen Van D', 'hsD4555', '$2b$10$U6x9VQOju8YxKJKkLbGKh.yE6BcUwtSPq6zE/X0QcfheIrZ.IkKvu', 'nguyend@example.com', '0123456789'),
-('HS002', 'Pham Thi E', 'hsE', 'hs5678', 'phamt@example.com', '0987654321'),
-('HS003', 'Bui Van F', 'hsF', 'hs91011', 'buiv@example.com', '0112233445'),
-('HS0035', 'Bui Van F', 'hsF1', '$2b$10$dyHoaIwnG850102.7tYmb.8UQoh1oaFHzwnYGHYVve7fZgl32X8LK', 'buiv@example.com', '0112233445');
+('HS001', 'Nguyen Van A', 'student1', '$2b$10$EYSf9d6OPXQmz0OxZ1xIWerK4u5Qyh63kPH7RI2GLyTrzCe6i9Ih.', 'student1@example.com', '0123456789'),
+('HS004', 'Nguyen Thi G', 'hsG', '$2b$10$VFLrtEkBn54hkaO6llAmBu6ywl.EPiT.VfVIvC2E0se/h517d0Wb.', 'nguyeng@example.com', '0998877665'),
+('SVe4be66dd', 'Nguyen Thi Gia', 'hsG1', '$2b$10$3ycDuMUGq2NTM8jIZ5eiZOkx5ehs9CcirYrn4xGJb7R4L/pAn0SJ.', 'nguyeng@example.com', '0998877665');
 
 -- --------------------------------------------------------
 
@@ -189,9 +693,11 @@ INSERT INTO `hocsinh` (`id_hocsinh`, `ten_hocsinh`, `tendangnhap`, `matkhau`, `e
 -- Table structure for table `monhoc`
 --
 
-CREATE TABLE `monhoc` (
+DROP TABLE IF EXISTS `monhoc`;
+CREATE TABLE IF NOT EXISTS `monhoc` (
   `id_monhoc` varchar(10) NOT NULL,
-  `tenmonhoc` varchar(50) NOT NULL
+  `tenmonhoc` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_monhoc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -202,72 +708,6 @@ INSERT INTO `monhoc` (`id_monhoc`, `tenmonhoc`) VALUES
 ('MH001', 'Toan'),
 ('MH002', 'Van'),
 ('MH003', 'Anh');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `admin`
---
-ALTER TABLE `admin`
-  ADD PRIMARY KEY (`id_admin`);
-
---
--- Indexes for table `baithi`
---
-ALTER TABLE `baithi`
-  ADD PRIMARY KEY (`id_baithi`),
-  ADD KEY `id_hocsinh` (`id_hocsinh`),
-  ADD KEY `id_dethi` (`id_dethi`);
-
---
--- Indexes for table `cauhoi`
---
-ALTER TABLE `cauhoi`
-  ADD PRIMARY KEY (`id_cauhoi`),
-  ADD KEY `id_monhoc` (`id_monhoc`);
-
---
--- Indexes for table `cautraloi`
---
-ALTER TABLE `cautraloi`
-  ADD PRIMARY KEY (`id_cautraloi`),
-  ADD KEY `id_cauhoi` (`id_cauhoi`);
-
---
--- Indexes for table `dethi`
---
-ALTER TABLE `dethi`
-  ADD PRIMARY KEY (`id_dethi`),
-  ADD KEY `id_giaovien` (`id_giaovien`),
-  ADD KEY `id_monhoc` (`id_monhoc`);
-
---
--- Indexes for table `dethi_cauhoi`
---
-ALTER TABLE `dethi_cauhoi`
-  ADD PRIMARY KEY (`id_dethi`,`id_cauhoi`),
-  ADD KEY `id_cauhoi` (`id_cauhoi`);
-
---
--- Indexes for table `giaovien`
---
-ALTER TABLE `giaovien`
-  ADD PRIMARY KEY (`id_giaovien`),
-  ADD KEY `monchinh` (`monchinh`);
-
---
--- Indexes for table `hocsinh`
---
-ALTER TABLE `hocsinh`
-  ADD PRIMARY KEY (`id_hocsinh`);
-
---
--- Indexes for table `monhoc`
---
-ALTER TABLE `monhoc`
-  ADD PRIMARY KEY (`id_monhoc`);
 
 --
 -- Constraints for dumped tables
@@ -307,7 +747,19 @@ ALTER TABLE `dethi_cauhoi`
   ADD CONSTRAINT `dethi_cauhoi_ibfk_2` FOREIGN KEY (`id_cauhoi`) REFERENCES `cauhoi` (`id_cauhoi`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `dethi_hocsinh`
+--
+ALTER TABLE `dethi_hocsinh`
+  ADD CONSTRAINT `dethi_hocsinh_ibfk_1` FOREIGN KEY (`id_dethi`) REFERENCES `dethi` (`id_dethi`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `dethi_hocsinh_ibfk_2` FOREIGN KEY (`id_hocsinh`) REFERENCES `hocsinh` (`id_hocsinh`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `giaovien`
 --
 ALTER TABLE `giaovien`
   ADD CONSTRAINT `giaovien_ibfk_1` FOREIGN KEY (`monchinh`) REFERENCES `monhoc` (`id_monhoc`) ON DELETE SET NULL ON UPDATE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
