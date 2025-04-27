@@ -135,4 +135,3 @@ router.get("/accessible-exams", verifyToken, async (req, res) => {
 });
 
 module.exports = router;
-
