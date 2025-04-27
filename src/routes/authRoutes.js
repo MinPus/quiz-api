@@ -75,49 +75,33 @@ router.post("/hocsinh/register", async (req, res) => {
 });
 
 
-// Đăng nhập học sinh
 router.post("/hocsinh/login", async (req, res) => {
     try {
       console.log("Yêu cầu đăng nhập học sinh:", req.body);
       const { tendangnhap, matkhau } = req.body;
-  
-      const [results] = await db.query(
-        "SELECT * FROM hocsinh WHERE tendangnhap = ?",
-        [tendangnhap]
-      );
-  
+      const [results] = await db.query("SELECT * FROM hocsinh WHERE tendangnhap = ?", [tendangnhap]);
+      console.log("Kết quả DB:", results);
       if (results.length === 0) {
         return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
       }
-  
       const hocsinh = results[0];
       const isMatch = await bcrypt.compare(matkhau, hocsinh.matkhau);
-  
+      console.log("Kết quả so sánh mật khẩu:", isMatch);
       if (!isMatch) {
         return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
       }
-  
       const token = jwt.sign(
-        {
-          id_hocsinh: hocsinh.id_hocsinh,
-          tendangnhap: hocsinh.tendangnhap,
-          role: "student",
-        },
+        { id_hocsinh: hocsinh.id_hocsinh, tendangnhap: hocsinh.tendangnhap },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
-  
-      res.json({
-        message: "Đăng nhập học sinh thành công",
-        token,
-        tendangnhap: hocsinh.tendangnhap,
-        role: "student",
-      });
+      res.json({ message: "Đăng nhập học sinh thành công", token });
     } catch (err) {
       console.error("Lỗi đăng nhập học sinh:", err);
       res.status(500).json({ message: "Lỗi server", error: err.message });
     }
   });
+
 
 // Đăng ký giáo viên
 router.post("/giaovien/register", async (req, res) => {
