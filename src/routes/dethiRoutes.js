@@ -65,6 +65,107 @@ router.get("/access/:id_dethi", verifyToken, async (req, res) => {
   }
 });
 
+// Lấy danh sách đề thi
+// router.get('/', verifyToken, async (req, res) => {
+//   try {
+//     const user = req.user;
+
+//     if (user.role !== 'student') {
+//       return res.status(403).json({ message: 'Chỉ học sinh mới có thể truy cập' });
+//     }
+
+//     console.log('User ID from token:', user.id_hocsinh);
+
+//     const now = new Date();
+//     now.setHours(now.getHours() + 7); // Điều chỉnh múi giờ (Asia/Ho_Chi_Minh)
+//     console.log('Adjusted server time:', now.toISOString());
+
+//     const query = `
+//       SELECT DISTINCT d.*, m.tenmonhoc, g.ten_giaovien
+//       FROM dethi d
+//       JOIN monhoc m ON d.id_monhoc = m.id_monhoc
+//       JOIN giaovien g ON d.id_giaovien = g.id_giaovien
+//       LEFT JOIN dethi_hocsinh dh ON d.id_dethi = dh.id_dethi AND dh.id_hocsinh = ?
+//       WHERE d.trangthai = 'dethi'
+//         AND d.thoigianketthuc > ?
+//         AND (
+//           d.is_restricted = 0
+//           OR (d.is_restricted = 1 AND dh.id_hocsinh IS NOT NULL)
+//         )
+//     `;
+//     const [rows] = await pool.query(query, [user.id_hocsinh, now]);
+
+//     console.log('Raw query results:', rows.map(row => ({
+//       id_dethi: row.id_dethi,
+//       tendethi: row.tendethi,
+//       is_restricted: row.is_restricted,
+//       thoigianketthuc: row.thoigianketthuc,
+//       trangthai: row.trangthai,
+//     })));
+
+//     const exams = rows.map(row => ({
+//       id_dethi: row.id_dethi,
+//       tendethi: row.tendethi,
+//       ngay_tao: row.ngay_tao,
+//       thoigianthi: row.thoigianthi,
+//       thoigianbatdau: row.thoigianbatdau,
+//       thoigianketthuc: row.thoigianket copycat ngay_tao: new Date(row.ngay_tao).toISOString(),
+//       trangthai: row.trangthai,
+//       is_restricted: row.is_restricted,
+//       monhoc: { tenmonhoc: row.tenmonhoc },
+//       giaovien: { ten_giaovien: row.ten_giaovien },
+//     }));
+
+//     console.log('Filtered exams for user:', exams);
+
+//     res.status(200).json(exams);
+//   } catch (error) {
+//     console.error('Lỗi khi lấy danh sách đề thi:', error);
+//     res.status(500).json({ message: 'Lỗi server', error: error.message });
+//   }
+// });
+
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const user = req.user;
+    let query = `
+      SELECT d.*, m.tenmonhoc, g.ten_giaovien
+      FROM dethi d
+      JOIN monhoc m ON d.id_monhoc = m.id_monhoc
+      JOIN giaovien g ON d.id_giaovien = g.id_giaovien
+      WHERE d.trangthai = 'dethi'
+      AND d.thoigianketthuc > NOW()
+    `;
+    let queryParams = [];
+
+    // Nếu là học sinh, lọc các đề thi mà học sinh được phép truy cập
+    if (user.role === "student") {
+      query = `
+        SELECT DISTINCT d.*, m.tenmonhoc, g.ten_giaovien
+        FROM dethi d
+        JOIN monhoc m ON d.id_monhoc = m.id_monhoc
+        JOIN giaovien g ON d.id_giaovien = g.id_giaovien
+        LEFT JOIN dethi_hocsinh dh ON d.id_dethi = dh.id_dethi
+        WHERE d.trangthai = 'dethi'
+        AND d.thoigianketthuc > NOW()
+        AND (
+          d.is_restricted = 0
+          OR (d.is_restricted = 1 AND dh.id_hocsinh = ?)
+        )
+      `;
+      queryParams = [user.id];
+    }
+
+    const [rows] = await pool.query(query, queryParams);
+    console.log(`Exams fetched for user ${user.id}:`, JSON.stringify(rows, null, 2));
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách đề thi:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
+
+
 // Lấy danh sách bài thi của học sinh
 router.get("/baithi", verifyToken, async (req, res) => {
   try {
@@ -136,7 +237,6 @@ router.post("/baithi", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 });
-
 
 // API lấy danh sách id_dethi mà học sinh được phép truy cập
 router.get("/accessible-exams", verifyToken, async (req, res) => {
