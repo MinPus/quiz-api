@@ -74,35 +74,6 @@ router.post("/hocsinh/register", async (req, res) => {
   }
 });
 
-// Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Không có token hoặc token không hợp lệ" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  try {
-    // Verify token with clock tolerance (5 minutes)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET, { clockTolerance: 300 });
-    console.log("Decoded token:", decoded);
-    console.log("Current server time during verification:", new Date());
-
-    // Check for required fields
-    if (!decoded.id_hocsinh || !decoded.role) {
-      return res.status(401).json({ message: "Token thiếu thông tin id học role" });
-    }
-
-    req.user = decoded;
-    next();
-  } catch (error) {
-    console.error("Token verification error:", error);
-    if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ message: "Token đã hết hạn" });
-    }
-    return res.status(401).json({ message: "Token không hợp lệ" });
-  }
-};
 
 // Đăng nhập học sinh
 router.post("/hocsinh/login", async (req, res) => {
