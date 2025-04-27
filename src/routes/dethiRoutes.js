@@ -70,46 +70,35 @@ router.get("/access/:id_dethi", verifyToken, async (req, res) => {
   }
 });
 
-// Lấy danh sách đề thi
-router.get("/", verifyToken, async (req, res) => {
+// API lấy danh sách id_dethi mà học sinh được phép truy cập
+router.get("/accessible-exams", verifyToken, async (req, res) => {
   try {
     const user = req.user;
-    let query = `
-      SELECT d.*, m.tenmonhoc, g.ten_giaovien
-      FROM dethi d
-      JOIN monhoc m ON d.id_monhoc = m.id_monhoc
-      JOIN giaovien g ON d.id_giaovien = g.id_giaovien
-      WHERE d.trangthai = 'dethi'
-      AND d.thoigianketthuc > NOW()
-    `;
-    let queryParams = [];
 
-    // Nếu là học sinh, lọc các đề thi mà học sinh được phép truy cập
-    if (user.role === "student") {
-      query = `
-        SELECT DISTINCT d.*, m.tenmonhoc, g.ten_giaovien
-        FROM dethi d
-        JOIN monhoc m ON d.id_monhoc = m.id_monhoc
-        JOIN giaovien g ON d.id_giaovien = g.id_giaovien
-        LEFT JOIN dethi_hocsinh dh ON d.id_dethi = dh.id_dethi
-        WHERE d.trangthai = 'dethi'
-        AND d.thoigianketthuc > NOW()
-        AND (
-          d.is_restricted = 0
-          OR (d.is_restricted = 1 AND dh.id_hocsinh = ?)
-        )
-      `;
-      queryParams = [user.id];
+    if (user.role !== "student") {
+      return res.status(403).json({ message: "Chỉ học sinh mới có thể truy cập" });
     }
 
-    const [rows] = await pool.query(query, queryParams);
-    console.log(`Exams fetched for user ${user.id}:`, JSON.stringify(rows, null, 2));
-    res.status(200).json(rows);
+    const query = `
+      SELECT dh.id_dethi
+      FROM dethi_hocsinh dh
+      JOIN dethi d ON dh.id_dethi = d.id_dethi
+      WHERE dh.id_hocsinh = ?
+        AND d.trangthai = 'dethi'
+        AND d.is_restricted = 1
+        AND d.thoigianketthuc > NOW()
+    `;
+    const [rows] = await pool.query(query, [user.id_hocsinh]);
+
+    const accessibleExamIds = rows.map((row) => row.id_dethi);
+    console.log(`Accessible exam IDs for student ${user.id_hocsinh}:`, accessibleExamIds);
+    res.status(200).json({ examIds: accessibleExamIds });
   } catch (error) {
-    console.error("Lỗi khi lấy danh sách đề thi:", error);
+    console.error("Lỗi khi lấy danh sách đề thi được phép:", error);
     res.status(500).json({ message: "Lỗi server" });
   }
 });
+
 
 // Lấy danh sách bài thi của học sinh
 router.get("/baithi", verifyToken, async (req, res) => {
