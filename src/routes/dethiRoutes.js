@@ -31,6 +31,39 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
+// Kiểm tra quyền truy cập đề thi
+router.get("/access/:id_dethi", verifyToken, async (req, res) => {
+  try {
+    const { id_dethi } = req.params;
+    const user = req.user;
+
+    if (user.role !== "student") {
+      return res.status(403).json({ message: "Chỉ học sinh mới có thể kiểm tra quyền truy cập" });
+    }
+
+    const [examRows] = await pool.query("SELECT is_restricted FROM dethi WHERE id_dethi = ?", [id_dethi]);
+    if (examRows.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy đề thi" });
+    }
+
+    const exam = examRows[0];
+
+    if (exam.is_restricted === 0) {
+      return res.status(200).json({ hasAccess: true });
+    }
+
+    const [accessRows] = await pool.query(
+      "SELECT * FROM dethi_hocsinh WHERE id_dethi = ? AND id_hocsinh = ?",
+      [id_dethi, user.id_hocsinh]
+    );
+
+    const hasAccess = accessRows.length > 0;
+    return res.status(200).json({ hasAccess });
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra quyền truy cập đề thi:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
 
 // Lấy danh sách bài thi của học sinh
 router.get("/baithi", verifyToken, async (req, res) => {
